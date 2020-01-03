@@ -7,7 +7,7 @@ enum BlockType{
 
 enum CommandType{
     CASSIGN, CIF, CIFELSE, CWHILE, CDOWHILE,
-    CFOR, CFORDOWN, CREAD, CWRITE
+    CFOR, CFORDOWN, CREAD, CWRITE 
 };
 
 enum ExpressionType{

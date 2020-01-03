@@ -2,9 +2,6 @@
 #define GLOBAL_HPP
 
 #include "tree.hpp"
-#include <iostream>
-
-#define log(msg) {std::cerr<< msg <<'\n';}
 
 extern int yylineno;
 

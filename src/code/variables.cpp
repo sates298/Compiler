@@ -53,3 +53,48 @@ std::shared_ptr<Variable> ArrayVariable::getElement(long long idx){
         return this->elements[idx];
     }
 }
+
+std::string Variable::toString(){
+    std::string result;
+    if(this->type == VAL){
+        result += "Variable:{name=" + this->name + "}\n";
+    }else{
+        ArrayVariable *a = (ArrayVariable *)this;
+        auto arr = std::make_shared<ArrayVariable>(*a);
+        result = arr.get()->toString(); 
+    }
+    return result;
+}
+
+std::string ArrayVariable::toString(){
+    std::string result = "ArrayVariable:{name=" + this->name + ", from=" + std::to_string(this -> firstIdx) + ", to=" + std::to_string(this -> lastIdx);
+
+    result += ", array=[";
+    for(const auto& [key, val]:this->elements){
+        result += "idx=" + std::to_string(key) + ", val=" + val.get()->toString() + ", ";
+    }
+    result += "]}\n";
+    return result;
+}
+
+std::string Call::toString(){
+    std::string result = "Call:{name=" + this->name;
+    if(this->isFirstIndex){
+        result += ", callingIdx=" + std::to_string(this->firstIdx);
+    }else if(this->secondIdx != ""){
+        result += ", callingIdx=" + this->secondIdx;
+    }
+    result += "}";
+    return result;
+}
+
+std::string Value::toString(){
+    std::string result = "Value:{val=";
+    if(this->cal.get() != nullptr){
+        result += this->cal.get()->toString();
+    }else{
+        result += std::to_string(this->val);
+    }
+    result += "}";
+    return result;
+}

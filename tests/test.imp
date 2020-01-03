@@ -1,0 +1,13 @@
+[test]
+DECLARE
+    a, b, c(-4:22)
+BEGIN
+    a ASSIGN a TIMES i;
+    IF a EQ 2 THEN 
+        READ a;
+    ENDIF
+    FOR i FROM 5 TO 13 DO
+        a ASSIGN a PLUS i;
+    ENDFOR
+    WRITE a;
+END

@@ -80,12 +80,12 @@ Expression *handleExpression(Value left, Value right, ExpressionType type){
 }
 
 Command *handleAssign(Call a, Expression exp){
-    Command *cmd = new Command(std::make_shared<CodeBlock>(exp), CASSIGN);
+    Command *cmd = new Command(std::make_shared<Expression>(exp), CASSIGN);
     cmd->getCalls().emplace_back(std::make_shared<Call>(a));
     return cmd;
 }
 Command *handleIfElse(Condition cond, Multicommand *normal, Multicommand *elses){
-    Command *cmd = new Command(std::make_shared<CodeBlock>(cond), CIFELSE);
+    Command *cmd = new Command(std::make_shared<Condition>(cond), CIFELSE);
     cmd->appendBlocks({normal->commands.begin(),normal->commands.end()});
     long long idx = (long long) cmd->getNested().size();
     cmd->appendBlocks({elses->commands.begin(),elses->commands.end()});
@@ -93,28 +93,28 @@ Command *handleIfElse(Condition cond, Multicommand *normal, Multicommand *elses)
     return cmd;
 }
 Command *handleIf(Condition cond, Multicommand *mcmd){
-    Command *cmd = new Command(std::make_shared<CodeBlock>(cond), CIF);
+    Command *cmd = new Command(std::make_shared<Condition>(cond), CIF);
     cmd->appendBlocks({mcmd->commands.begin(),mcmd->commands.end()});
     return cmd;
 }
 Command *handleWhile(Condition cond, Multicommand *mcmd){
-    Command *cmd = new Command(std::make_shared<CodeBlock>(cond), CWHILE);
+    Command *cmd = new Command(std::make_shared<Condition>(cond), CWHILE);
     cmd->appendBlocks({mcmd->commands.begin(),mcmd->commands.end()});
     return cmd;
 }
 Command *handleDoWhile(Condition cond, Multicommand *mcmd){
-    Command *cmd = new Command(std::make_shared<CodeBlock>(cond), CDOWHILE);
+    Command *cmd = new Command(std::make_shared<Condition>(cond), CDOWHILE);
     cmd->appendBlocks({mcmd->commands.begin(),mcmd->commands.end()});
     return cmd;
 }
 Command *handleFor(std::string iterator, Value from, Value to, Multicommand *mcmd){
-    Command *cmd =
+    ForLoop *cmd =
              new ForLoop(iterator, from, to,
                         {mcmd->commands.begin(),mcmd->commands.end()}, CFOR);
-    return cmd;
+        return cmd;
 }
 Command *handleForDown(std::string iterator, Value from, Value to, Multicommand *mcmd){
-    Command *cmd =
+    ForLoop *cmd =
              new ForLoop(iterator, from, to,
                         {mcmd->commands.begin(),mcmd->commands.end()}, CFORDOWN);
     return cmd;
@@ -132,11 +132,21 @@ Command *handleWrite(Value val){
 
 Multicommand *handleCommand(Command *cmd){
     Multicommand *mcmd = new Multicommand();
-    mcmd->commands.emplace_back(std::make_shared<Command>(*cmd));
+    if(cmd->getType() == CFOR || cmd->getType() == CFORDOWN){
+        ForLoop *f = (ForLoop *)cmd;
+        mcmd->commands.emplace_back(std::make_shared<ForLoop>(*f));
+    }else{
+        mcmd->commands.emplace_back(std::make_shared<Command>(*cmd));
+    }
     return mcmd;
 }
 Multicommand *handleRecursiveCommands(Multicommand *mcmd, Command *cmd){
-    mcmd->commands.emplace_back(std::make_shared<Command>(*cmd));
+    if(cmd->getType() == CFOR || cmd->getType() == CFORDOWN){
+        ForLoop *f = (ForLoop *)cmd;
+        mcmd->commands.emplace_back(std::make_shared<ForLoop>(*f));
+    }else{
+        mcmd->commands.emplace_back(std::make_shared<Command>(*cmd));
+    }
     return mcmd;
 }
 

@@ -87,10 +87,6 @@ ForLoop::ForLoop(std::string iterator, Value from, Value to,
                     Command(nested, type), from(from), to(to){
     this->iterator = std::make_shared<Variable>(iterator);
 }
-     
-void ForLoop::setForLoop(std::shared_ptr<Variable> iterator){
-    this->iterator = iterator;
-}
 
 std::shared_ptr<Variable> ForLoop::getIterator(){
     return this->iterator;
@@ -140,4 +136,90 @@ ConditionType Condition::getCond(){
 }
 Value &Condition::getRight(){
     return this->rightValue;
+}
+
+// ------------------------------------TOSTRING-------------------------------------
+
+std::string CodeBlock::toString(){
+    std::string result = "CodeBlock:{block=" + std::to_string(this->blockType) + "}\n";
+    if(this->blockType == CMD){
+        Command *c = (Command *)this;
+        result = c->toString(); 
+    }else if(this->blockType == EXPR){
+        Expression *e = (Expression *)this;
+        result = e->toString(); 
+    }else{
+        Condition *c = (Condition *)this;
+        result = c->toString(); 
+    }
+    return result;
+}
+
+std::string Command::toString(){
+    std::string result = "cmd";
+    
+    if(this->type == CFOR || this->type == CFORDOWN){
+        ForLoop *f = (ForLoop *)this;
+        result = f->toString();
+    }else{
+        result = "Command:{";
+        std::string type = std::to_string(this->type);
+        std::string calls = "[";
+        for(auto c: this->calls){
+            calls += c.get()->toString();
+        }
+        calls += "]";
+
+        std::string nested = "[";
+        for(auto n: this->nested){
+            nested += "\t" + n.get()->toString();
+        }
+        nested += "]";
+        result += "type=" + type;
+        if(this->type == CIFELSE){
+            result += ", first else=" + std::to_string(this->firstElseIndex);
+            result += ", nested=" + nested;
+            result += ", calls="+calls+"}\n";
+        }else if(this->type == CWRITE){
+            result += ", writeValue=" + this->writeValue.toString(); 
+        }else{
+            result += ", nested=" + nested;
+            result += ", calls="+calls+"}\n";
+        }
+    }
+
+    return result;
+}
+
+std::string ForLoop::toString(){
+    std::string result = "ForLoop:{";
+    std::string type = std::to_string(this->type);
+    std::string calls = "[";
+    for(auto c: this->calls){
+        calls += c.get()->toString();
+    }
+    calls += "]";
+
+    std::string nested = "[";
+    for(auto n: this->nested){
+        nested += n.get()->toString();
+    }
+    nested += "]";
+    std::string it = this->iterator.get()->toString(); 
+    result += "type=" + type + ", iterator=" + it  + ", from=" + this->from.toString() + ", to=" + this-> to.toString() + ", nested=" + nested + ", calls=" + calls + "}\n";
+    return result;
+}
+
+std::string Expression::toString(){
+    std::string result = "Expression:{";
+    std::string expr = std::to_string(this->expr);
+    result += "left="+this->leftValue.toString()+", expr="+ expr + ", right=" + this->rightValue.toString() + "}\n";
+    return result;
+}
+
+std::string Condition::toString(){
+    std::string result = "Condition:{";
+    std::string cond = std::to_string(this->cond);
+    result += "left="+this->leftValue.toString()+", cond="+ cond + ", right=" + this->rightValue.toString() + "}\n";
+    return result;
 }

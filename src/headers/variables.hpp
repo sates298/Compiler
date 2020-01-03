@@ -3,6 +3,7 @@
 #include<string>
 #include<memory>
 #include<map>
+#include "typedefs.hpp"
 
 enum VariableType{
     VAL, ARR
@@ -29,6 +30,8 @@ class Variable{
         bool isDeclared();
         bool isArray();
 
+        std::string toString();
+
 };
 
 class ArrayVariable : public Variable{
@@ -40,7 +43,7 @@ class ArrayVariable : public Variable{
         ArrayVariable(std::string name ,long long a, long long b);
         void setElement(long long idx, std::shared_ptr<Variable> element);
         std::shared_ptr<Variable> getElement(long long idx);
-
+        std::string toString();
 };
 
 struct Call{
@@ -49,11 +52,15 @@ struct Call{
 
     long long firstIdx;
     std::string secondIdx = "";
+
+    std::string toString();
 };
 
 struct Value{
     std::shared_ptr<Call> cal = nullptr;
     long long val;
+
+    std::string toString();
 };
 
 #endif

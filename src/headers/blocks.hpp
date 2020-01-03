@@ -24,6 +24,9 @@ class CodeBlock{
         BlockType getBlockType();
         std::vector<std::shared_ptr<Call>> &getCalls();
         // std::vector<std::shared_ptr<Asm>> getAssembler();
+
+
+        std::string toString();
 };
 
 class Command: public CodeBlock{
@@ -51,6 +54,8 @@ class Command: public CodeBlock{
         //to write block
         Value &getValue();
         void setValue(Value val);
+
+        std::string toString();
 };
 
 class ForLoop : public Command{
@@ -62,12 +67,12 @@ class ForLoop : public Command{
         ForLoop(std::string iterator, Value from, Value to, std::shared_ptr<CodeBlock> nested, CommandType type);
         ForLoop(std::string iterator, Value from, Value to, std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type);
         virtual ~ForLoop() = default;
-        void setForLoop(std::shared_ptr<Variable> iterator);
         std::shared_ptr<Variable> getIterator();
         Value &getFrom();
         Value &getTo();
-};
 
+        std::string toString();
+};
 
 class Expression : public CodeBlock{
     private:
@@ -88,6 +93,8 @@ class Expression : public CodeBlock{
         Value &getLeft();
         ExpressionType getExpr();
         Value &getRight();
+
+        std::string toString();
 };
 
 class Condition : public CodeBlock{
@@ -109,6 +116,8 @@ class Condition : public CodeBlock{
         Value &getLeft();
         ConditionType getCond();
         Value &getRight();
+
+        std::string toString();
 };
 
 struct Multicommand{

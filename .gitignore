@@ -1,3 +1,4 @@
 maszyna_wirtualna/
 *.pdf
 .vscode
+src/compiler
