@@ -31,11 +31,13 @@ classes: handlers
 	$(CXX) -o tree.o -c code/tree.cpp
 
 main: classes
+	$(CXX) -o global.o -c code/global.cpp
 	$(CXX) -o errors.o -c code/errors.cpp
 	$(CXX) -o main.o -c code/main.cpp
 
 compiler: parser main
-	$(CXX) -o compiler lexer.o yacc.o assembler.o variables.o blocks.o tree.o errors.o main.o 
+	$(CXX) -o compiler lexer.o yacc.o handlers.o assembler.o variables.o \
+		 blocks.o tree.o global.o errors.o main.o 
 
 test:
 	./compiler < ../tests/test.imp > ../tests/test.mr

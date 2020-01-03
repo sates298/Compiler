@@ -4,13 +4,17 @@
 #include<memory>
 #include<map>
 
+enum VariableType{
+    VAL, ARR
+};
+
 class Variable{
     protected:
         std::string name;
         long long value;
         bool constant = false;
         bool declared = false;
-        bool array = false;
+        VariableType type;
     public:
         Variable(std::string name);
         ~Variable(){}
@@ -39,8 +43,16 @@ class ArrayVariable : public Variable{
 
 };
 
-struct value{
-    std::shared_ptr<Variable> var = nullptr;
+struct Call{
+    std::string name = "";
+    bool isFirstIndex;
+
+    long long firstIdx;
+    std::string secondIdx = "";
+};
+
+struct Value{
+    std::shared_ptr<Call> cal = nullptr;
     long long val;
 };
 

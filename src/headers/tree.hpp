@@ -6,17 +6,13 @@
 class Tree{
     private:
         std::map<std::string, std::shared_ptr<Variable>> variables;
-        std::shared_ptr<CodeBlock> root;
+        std::vector<std::shared_ptr<CodeBlock>> roots;
         std::vector<std::shared_ptr<Asm>> assembler;
     public:
         Tree(){};
-        void setRoot(CodeBlock *newRoot);
-        std::map<std::string, std::shared_ptr<Variable>> getVariables();
-        std::shared_ptr<CodeBlock> getRoot();
-        std::vector<std::shared_ptr<Asm>> getAssembler();
+        void setRoots(std::vector<std::shared_ptr<CodeBlock>> newRoots);
+        std::map<std::string, std::shared_ptr<Variable>> &getVariables();
+        std::vector<std::shared_ptr<CodeBlock>> &getRoots();
+        std::vector<std::shared_ptr<Asm>> &getAssembler();
 };
-
-std::shared_ptr<Tree> tree = std::make_shared<Tree>();
-Tree tree2 = Tree();
-
 #endif

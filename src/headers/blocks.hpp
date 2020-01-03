@@ -5,82 +5,114 @@
 #include<memory>
 #include<map>
 #include<vector>
-#include<tuple>
 #include "variables.hpp"
 #include "assembler.hpp"
 #include "block_types.hpp"
 
 class CodeBlock{
-    private:
-        std::shared_ptr<CodeBlock> parent;
+    protected:
+        CodeBlock *parent;
         BlockType blockType;
+        std::vector<std::shared_ptr<Call>> calls;
         // std::vector<std::shared_ptr<Asm>> assembler;
     public:
         CodeBlock(BlockType blockType);
-        ~CodeBlock(){};
-        std::shared_ptr<CodeBlock> getParent();
-        void setParent(std::shared_ptr<CodeBlock> parent);
+        virtual ~CodeBlock() = default;
+        CodeBlock *getParent();
+        void setParent(CodeBlock *parent);
         std::map<std::string, std::shared_ptr<Variable>> getLocalVariables();
         BlockType getBlockType();
+        std::vector<std::shared_ptr<Call>> &getCalls();
         // std::vector<std::shared_ptr<Asm>> getAssembler();
 };
 
 class Command: public CodeBlock{
-    private:
+    protected:
         std::vector<std::shared_ptr<CodeBlock>> nested;
-        CommandType type;
-        std::shared_ptr<Variable> iterator;
-
-        
+        CommandType type;    
+    private:   
+        //to if else block
+        long long firstElseIndex;
+        //to write block
+        Value writeValue;
     public:
+        Command(CommandType type);
         Command(std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type);
         Command(std::shared_ptr<CodeBlock> nested, CommandType type);
-        ~Command(){};
-        std::vector<std::shared_ptr<CodeBlock>> getNested();
-        void setForLoop(std::shared_ptr<Variable> iterator);
+        virtual ~Command() = default;
+        std::vector<std::shared_ptr<CodeBlock>> &getNested();
+        void appendBlock(std::shared_ptr<CodeBlock> block);
+        void appendBlocks(std::vector<std::shared_ptr<CodeBlock>> blocks);
         CommandType getType();
+
+        //to if else block
+        long long getFirstElseIndex();
+        void setFirstElseIndex(long long idx);
+        //to write block
+        Value &getValue();
+        void setValue(Value val);
+};
+
+class ForLoop : public Command{
+    private:
+        std::shared_ptr<Variable> iterator;
+        Value from;
+        Value to;
+    public:
+        ForLoop(std::string iterator, Value from, Value to, std::shared_ptr<CodeBlock> nested, CommandType type);
+        ForLoop(std::string iterator, Value from, Value to, std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type);
+        virtual ~ForLoop() = default;
+        void setForLoop(std::shared_ptr<Variable> iterator);
         std::shared_ptr<Variable> getIterator();
+        Value &getFrom();
+        Value &getTo();
 };
 
 
 class Expression : public CodeBlock{
     private:
-        value leftValue;
+        Value leftValue;
         ExpressionType expr;
-        value rightValue;
+        Value rightValue;
 
         bool resultExists = false;
         long long result;
 
-        void checkResult();
-        void computeResult(long long a, long long b);
+        // void checkResult();
+        // void computeResult(long long a, long long b);
     public:
-        Expression(value leftValue, ExpressionType expr, value rightValue);
+        Expression(Value leftValue, ExpressionType expr, Value rightValue);
+        virtual ~Expression() = default;
         bool isResultExist();
         long long getResult();
-        value getLeft();
+        Value &getLeft();
         ExpressionType getExpr();
-        value getRight();
+        Value &getRight();
 };
 
 class Condition : public CodeBlock{
     private:
-        value leftValue;
+        Value leftValue;
         ConditionType cond;
-        value rightValue;
+        Value rightValue;
 
         bool resultExists = false;
         bool result;
         
-        void checkResult();
-        void computeResult(long long a, long long b);
+        // void checkResult();
+        // void computeResult(long long a, long long b);
     public:
-        Condition(value leftValue, ConditionType cond, value rightValue);
+        Condition(Value leftValue, ConditionType cond, Value rightValue);
+        virtual ~Condition() = default;
         bool isResultExist();
         bool getResult();
-        value getLeft();
+        Value &getLeft();
         ConditionType getCond();
-        value getRight();
+        Value &getRight();
+};
+
+struct Multicommand{
+    std::vector<std::shared_ptr<Command>> commands;
 };
 
 #endif

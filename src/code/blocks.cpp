@@ -3,126 +3,108 @@
 // ------------------------------------CODE-BLOCK-------------------------------------
 
 CodeBlock::CodeBlock(BlockType blockType): blockType(blockType){
-    this -> parent = nullptr;
+    this->parent = nullptr;
 }
-std::shared_ptr<CodeBlock> CodeBlock::getParent(){
+CodeBlock *CodeBlock::getParent(){
     return this -> parent;
 }
-void CodeBlock::setParent(std::shared_ptr<CodeBlock> parent){
+void CodeBlock::setParent(CodeBlock *parent){
     this->parent = parent;
 }
 BlockType CodeBlock::getBlockType(){
     return this -> blockType;
 }
 std::map<std::string, std::shared_ptr<Variable>> CodeBlock::getLocalVariables(){
-    std::shared_ptr<CodeBlock> curr(this);
+    CodeBlock *curr = this;
     std::map<std::string, std::shared_ptr<Variable>> localVariables;
-    while(curr.get()->parent != nullptr){
-        if(curr.get()->blockType == CMD){
-            //todo zrobic virtual == 0 jako gettery
-            std::shared_ptr<Command> cmd = std::dynamic_pointer_cast<Command>(curr);
-            if(cmd.get() -> getType() == CFOR || cmd.get() -> getType() == CFORDOWN){
-                localVariables[cmd.get()->getIterator().get()->getName()] = cmd.get()->getIterator();
+    while(curr->parent != nullptr){
+        if(curr->blockType == CMD && (((Command *)curr)->getType() == CFOR 
+                                || ((Command *)curr)->getType() == CFORDOWN)){
+            ForLoop *cmd = (ForLoop *)(curr);
+            if(cmd -> getType() == CFOR || cmd -> getType() == CFORDOWN){
+                localVariables[cmd->getIterator().get()->getName()] = cmd->getIterator();
             }
         }
     }
     return localVariables;
 }
+std::vector<std::shared_ptr<Call>> &CodeBlock::getCalls(){
+    return this->calls;
+}
+
 // ------------------------------------COMMAND-------------------------------------
-Command::Command(std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type): CodeBlock(CMD), nested(nested), type(type){
-    for(auto block:nested){
-        block.get()->setParent(std::make_shared<CodeBlock>(this));
+Command::Command(CommandType type): CodeBlock(CMD), type(type){}
+
+Command::Command(std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type): Command(type){
+    this->appendBlocks(nested);
+}
+
+Command::Command(std::shared_ptr<CodeBlock> nested, CommandType type): Command(type){
+    this->appendBlock(nested);
+}
+
+void Command::appendBlock(std::shared_ptr<CodeBlock> block){
+    this->nested.emplace_back(block);
+    block.get()->setParent(this);
+}
+
+void Command::appendBlocks(std::vector<std::shared_ptr<CodeBlock>> blocks){
+    for(auto b:blocks){
+        this->appendBlock(b);
     }
 }
 
-Command::Command(std::shared_ptr<CodeBlock> nested, CommandType type): CodeBlock(CMD), type(type){
-    this->nested.emplace_back(nested);
-    nested.get()->setParent(std::make_shared<CodeBlock>(this));
-}
-
-void Command::setForLoop(std::shared_ptr<Variable> iterator){
-    this->iterator = iterator;
-}
-
-std::vector<std::shared_ptr<CodeBlock>> Command::getNested(){
+std::vector<std::shared_ptr<CodeBlock>> &Command::getNested(){
     return this -> nested;
-}
-
-std::shared_ptr<Variable> Command::getIterator(){
-    return this->iterator;
 }
 
 CommandType Command::getType(){
     return this -> type;
 }
+//CIFELSE
+long long Command::getFirstElseIndex(){
+    return this->firstElseIndex;
+}
+
+void Command::setFirstElseIndex(long long idx){
+    this->firstElseIndex = idx;
+}
+//CWRITE
+Value &Command::getValue(){
+    return this->writeValue;
+}
+void Command::setValue(Value val){
+    this->writeValue = val;
+}
+// ------------------------------------FORLOOP-------------------------------------
+ForLoop::ForLoop(std::string iterator, Value from, Value to,
+                     std::shared_ptr<CodeBlock> nested, CommandType type):
+                        Command(nested, type), from(from), to(to) {
+    this->iterator = std::make_shared<Variable>(iterator);
+}
+ForLoop::ForLoop(std::string iterator, Value from, Value to,
+                 std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type):
+                    Command(nested, type), from(from), to(to){
+    this->iterator = std::make_shared<Variable>(iterator);
+}
+     
+void ForLoop::setForLoop(std::shared_ptr<Variable> iterator){
+    this->iterator = iterator;
+}
+
+std::shared_ptr<Variable> ForLoop::getIterator(){
+    return this->iterator;
+}
+
+Value &ForLoop::getFrom(){
+    return this->from;
+}
+Value &ForLoop::getTo(){
+    return this->to;
+}
 // ------------------------------------EXPRESSION-------------------------------------
 
-Expression::Expression(value leftValue, ExpressionType expr, value rightValue):CodeBlock(EXPR), leftValue(leftValue), expr(expr), rightValue(rightValue){
-    checkResult();
-}
-
-void Expression::checkResult(){
-    long long a,b;
-    if(this->leftValue.var.get() == nullptr){
-        a = this->leftValue.val;
-    }else if(this->leftValue.var.get()->isConstant() && 
-            this->leftValue.var.get()->isDeclared()){
-        a = this->leftValue.var.get()->getValue();
-    }else{
-        return;
-    }
-
-    if(this->rightValue.var.get() == nullptr){
-        b = this->rightValue.val;
-    }else if(this->rightValue.var.get()->isConstant() && 
-            this->rightValue.var.get()->isDeclared()){
-        b = this->rightValue.var.get()->getValue();
-    }else{
-        return;
-    }
-
-    this->computeResult(a,b);
-}
-
-void Expression::computeResult(long long a, long long b){
-    switch (this->expr)
-    {
-    case EPLUS:
-        //todo sprawdzenie zakresu
-        this->result = a + b;
-        break;
-    case EMINUS:
-        //todo sprawdzenie zakresu
-        this->result = a - b;
-        break;
-    case ETIMES:
-        //todo sprawdzenie zakresu
-        this->result = a*b;
-        break;
-    case EDIV:
-        if(b == 0){
-            this->result=0;
-        }else if(a*b <0 && a%b != 0){
-            this->result = (a / b) - 1;
-        }else{
-            this->result = a / b;
-        }
-        break;
-    case EMOD:
-        if(b == 0){
-            this->result=0;
-        }else if(a*b <0 && a%b != 0){
-            this->result = (a % b) + b;
-        }else{
-            this->result = a % b;
-        }
-        break;
-    default:
-        this->resultExists = false;
-        return;
-    }
-    this->resultExists = true;
-}
+Expression::Expression(Value leftValue, ExpressionType expr, Value rightValue):CodeBlock(EXPR), leftValue(leftValue), expr(expr), rightValue(rightValue){}
 
 bool Expression::isResultExist(){
     return this->resultExists;
@@ -130,73 +112,19 @@ bool Expression::isResultExist(){
 long long Expression::getResult(){
     return this -> result;
 }
-value Expression::getLeft(){
+Value &Expression::getLeft(){
     return this -> leftValue;
 }
 ExpressionType Expression::getExpr(){
     return this->expr;
 }
-value Expression::getRight(){
+Value &Expression::getRight(){
     return this->rightValue;
 }
 
 // ------------------------------------CONDITION-------------------------------------
 
-Condition::Condition(value leftValue, ConditionType cond, value rightValue):CodeBlock(COND), leftValue(leftValue), cond(cond), rightValue(rightValue){
-    checkResult();
-}
-
-void Condition::checkResult(){
-    long long a,b;
-    if(this->leftValue.var.get() == nullptr){
-        a = this->leftValue.val;
-    }else if(this->leftValue.var.get()->isConstant() && 
-            this->leftValue.var.get()->isDeclared()){
-        a = this->leftValue.var.get()->getValue();
-    }else{
-        return;
-    }
-
-    if(this->rightValue.var.get() == nullptr){
-        b = this->rightValue.val;
-    }else if(this->rightValue.var.get()->isConstant() && 
-            this->rightValue.var.get()->isDeclared()){
-        b = this->rightValue.var.get()->getValue();
-    }else{
-        return;
-    }
-
-    this->computeResult(a,b);
-}
-
-void Condition::computeResult(long long a, long long b){
-    switch (this->cond)
-    {
-    case CEQ:
-        this->result = a == b;
-        break;
-    case CNEQ:
-        this->result = a != b;
-        break;
-    case CLE:
-        this->result = a < b;
-        break;
-    case CGE:
-        this->result = a > b;
-        break;
-    case CLEQ:
-        this->result = a <= b;
-        break;
-    case CGEQ:
-        this->result = a >= b;
-        break;
-    default:
-        this->resultExists = false;
-        return;
-    }
-    this->resultExists = true;
-}
-
+Condition::Condition(Value leftValue, ConditionType cond, Value rightValue):CodeBlock(COND), leftValue(leftValue), cond(cond), rightValue(rightValue){}
 
 bool Condition::isResultExist(){
     return this->resultExists;
@@ -204,12 +132,12 @@ bool Condition::isResultExist(){
 bool Condition::getResult(){
     return this->result;
 }
-value Condition::getLeft(){
+Value &Condition::getLeft(){
     return this -> leftValue;
 }
 ConditionType Condition::getCond(){
     return this->cond;
 }
-value Condition::getRight(){
+Value &Condition::getRight(){
     return this->rightValue;
 }

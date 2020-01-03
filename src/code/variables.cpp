@@ -1,6 +1,6 @@
 #include "../headers/variables.hpp"
 
-Variable::Variable(std::string name) : name(name) {}
+Variable::Variable(std::string name) : name(name), type(VAL) {}
 
 void Variable::setValue(long long value){
     this -> value = value;
@@ -25,14 +25,14 @@ bool Variable::isDeclared(){
     return this -> declared;
 }
 bool Variable::isArray(){
-    return this -> array;
+    return this -> type == ARR;
 }
 
 ArrayVariable::ArrayVariable(std::string name ,long long a, long long b) : Variable(name) {
     if (a > b){
         throw -1;
     }else{
-        this->array = true;
+        this->type = ARR;
         this->firstIdx = a;
         this->lastIdx = b;
     }

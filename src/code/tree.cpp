@@ -1,17 +1,17 @@
 #include "../headers/tree.hpp"
 
-void Tree::setRoot(CodeBlock *newRoot){
-    this->root = std::make_shared<CodeBlock>(newRoot);
+void Tree::setRoots(std::vector<std::shared_ptr<CodeBlock>> newRoots){
+    this->roots = newRoots;
 }
 
-std::map<std::string, std::shared_ptr<Variable>> Tree::getVariables(){
+std::map<std::string, std::shared_ptr<Variable>> &Tree::getVariables(){
     return this->variables;
 }
 
-std::shared_ptr<CodeBlock> Tree::getRoot(){
-    return this->root;
+std::vector<std::shared_ptr<CodeBlock>> &Tree::getRoots(){
+    return this->roots;
 }
 
-std::vector<std::shared_ptr<Asm>> Tree::getAssembler(){
+std::vector<std::shared_ptr<Asm>> &Tree::getAssembler(){
     return this->assembler;
 }

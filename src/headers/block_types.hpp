@@ -11,7 +11,7 @@ enum CommandType{
 };
 
 enum ExpressionType{
-    EPLUS, EMINUS, ETIMES, EDIV, EMOD
+    EPLUS, EMINUS, ETIMES, EDIV, EMOD, ENULL
 };
 
 enum ConditionType{
