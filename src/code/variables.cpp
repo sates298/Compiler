@@ -5,8 +5,8 @@ Variable::Variable(std::string name) : name(name) {}
 void Variable::setValue(long long value){
     this -> value = value;
 }
-void Variable::setClean(bool clean){
-    this -> clean = clean;
+void Variable::setConstant(bool constant){
+    this -> constant = constant;
 }
 void Variable::setDeclared(bool declared){
     this -> declared = declared;
@@ -18,8 +18,8 @@ std::string Variable::getName(){
 long long Variable::getValue(){
     return this -> value;
 }
-bool Variable::isClean(){
-    return this -> clean;
+bool Variable::isConstant(){
+    return this -> constant;
 }
 bool Variable::isDeclared(){
     return this -> declared;

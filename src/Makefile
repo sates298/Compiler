@@ -1,5 +1,5 @@
 BFLAGS=-d -Wconflicts-sr
-CFLAGS=-Wall --pedantic #-std=c11
+CFLAGS=-Wall --pedantic -std=c++17
 
 
 CXX=g++ $(CFLAGS)
@@ -17,11 +17,14 @@ flex:
 bison:
 	$(BISON) -o yacc.cpp yacc.y
 
-parser: bison flex
-	$(CXX) -o lexer.o -c lexer.cpp
+parser: flex bison
 	$(CXX) -o yacc.o -c yacc.cpp
+	$(CXX) -o lexer.o -c lexer.cpp
 
-classes:
+handlers: parser
+	$(CXX) -o handlers.o -c code/handlers.cpp
+
+classes: handlers
 	$(CXX) -o assembler.o -c code/assembler.cpp
 	$(CXX) -o variables.o -c code/variables.cpp
 	$(CXX) -o blocks.o -c code/blocks.cpp

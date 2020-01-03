@@ -8,7 +8,7 @@ class Variable{
     protected:
         std::string name;
         long long value;
-        bool clean = true;
+        bool constant = false;
         bool declared = false;
         bool array = false;
     public:
@@ -16,12 +16,12 @@ class Variable{
         ~Variable(){}
 
         void setValue(long long value);
-        void setClean(bool clean);
+        void setConstant(bool constant);
         void setDeclared(bool declared);
 
         std::string getName();
         long long getValue();
-        bool isClean();
+        bool isConstant();
         bool isDeclared();
         bool isArray();
 
@@ -37,6 +37,11 @@ class ArrayVariable : public Variable{
         void setElement(long long idx, std::shared_ptr<Variable> element);
         std::shared_ptr<Variable> getElement(long long idx);
 
+};
+
+struct value{
+    std::shared_ptr<Variable> var = nullptr;
+    long long val;
 };
 
 #endif

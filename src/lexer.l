@@ -1,7 +1,5 @@
 %{
-#include "yacc.hpp"
-#include "headers/main.hpp"
-#include<string>
+    #include "headers/scanner_declarations.hpp"
 %}
 
 %x COMMENT
@@ -14,8 +12,8 @@
     .   /*ignore*/;
 }
 
-[_a-b]+ {return PIDENTIFIER;}
--?[1-9][0-9]*|0 {yylval = std::stoi(yytext); return NUM;}
+[_a-z]+         {yylval.str = new std::string(yytext); return PIDENTIFIER;}
+[[:digit:]]+    {yylval.int64 = std::stoll(yytext); return NUM;}
 [ \t]+    /*ignore*/;
 
 
@@ -55,3 +53,7 @@ GEQ {return GEQ;}
 
 .   {return yytext[0];}
 %%
+
+int yywrap(){
+    return 1;
+}

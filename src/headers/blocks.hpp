@@ -8,30 +8,79 @@
 #include<tuple>
 #include "variables.hpp"
 #include "assembler.hpp"
-
-enum BlockType{
-    ASSIGN, IF, IFELSE, WHILE, DOWHILE, FOR, FORDOWN, READ, WRITE
-};
+#include "block_types.hpp"
 
 class CodeBlock{
     private:
         std::shared_ptr<CodeBlock> parent;
-        BlockType type;
-        std::vector<std::shared_ptr<CodeBlock>> nested;
-        std::vector<std::shared_ptr<Asm>> assembler;
-
-        bool forLoop;
-        std::shared_ptr<Variable> iterator;
+        BlockType blockType;
+        // std::vector<std::shared_ptr<Asm>> assembler;
     public:
-        CodeBlock( std::vector<std::shared_ptr<CodeBlock>> nestedBlocks, BlockType blockType);
-        CodeBlock( std::shared_ptr<CodeBlock> nestedBlock, BlockType blockType);
-        ~CodeBlock(){}
-
-        void setForLoop(std::shared_ptr<Variable> iterator);
+        CodeBlock(BlockType blockType);
+        ~CodeBlock(){};
         std::shared_ptr<CodeBlock> getParent();
-        BlockType getType();
+        void setParent(std::shared_ptr<CodeBlock> parent);
         std::map<std::string, std::shared_ptr<Variable>> getLocalVariables();
-        std::vector<std::shared_ptr<CodeBlock>> getNested();
-        std::vector<std::shared_ptr<Asm>> getAssembler();
+        BlockType getBlockType();
+        // std::vector<std::shared_ptr<Asm>> getAssembler();
 };
+
+class Command: public CodeBlock{
+    private:
+        std::vector<std::shared_ptr<CodeBlock>> nested;
+        CommandType type;
+        std::shared_ptr<Variable> iterator;
+
+        
+    public:
+        Command(std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type);
+        Command(std::shared_ptr<CodeBlock> nested, CommandType type);
+        ~Command(){};
+        std::vector<std::shared_ptr<CodeBlock>> getNested();
+        void setForLoop(std::shared_ptr<Variable> iterator);
+        CommandType getType();
+        std::shared_ptr<Variable> getIterator();
+};
+
+
+class Expression : public CodeBlock{
+    private:
+        value leftValue;
+        ExpressionType expr;
+        value rightValue;
+
+        bool resultExists = false;
+        long long result;
+
+        void checkResult();
+        void computeResult(long long a, long long b);
+    public:
+        Expression(value leftValue, ExpressionType expr, value rightValue);
+        bool isResultExist();
+        long long getResult();
+        value getLeft();
+        ExpressionType getExpr();
+        value getRight();
+};
+
+class Condition : public CodeBlock{
+    private:
+        value leftValue;
+        ConditionType cond;
+        value rightValue;
+
+        bool resultExists = false;
+        bool result;
+        
+        void checkResult();
+        void computeResult(long long a, long long b);
+    public:
+        Condition(value leftValue, ConditionType cond, value rightValue);
+        bool isResultExist();
+        bool getResult();
+        value getLeft();
+        ConditionType getCond();
+        value getRight();
+};
+
 #endif

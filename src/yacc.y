@@ -1,6 +1,15 @@
-%{
- #include "headers/main.hpp"
-%}
+%code requires{
+  #include "headers/bison_declarations.hpp"
+}
+
+%union {
+  long long   int64;
+  std::string *str;
+
+  CodeBlock   *block;
+  Variable    *var;
+}
+
 // VARIABLES-CONSTANTS
 %token NUM PIDENTIFIER
 
@@ -16,6 +25,10 @@
 // CONDITIONS
 %token EQ NEQ LE GE LEQ GEQ
 
+%type<int64>  number;
+%type<str>    name;
+
+// %type<block>  command;
 %%
 input:
     program
@@ -23,15 +36,15 @@ input:
 ;
 
 program:  
-    PDECLARE declarations PBEGIN commands PEND
-  | PBEGIN commands PEND
+    PDECLARE declarations PBEGIN commands PEND {/*tree.setRoot(std::move($4)); delete $4;*/}
+  | PBEGIN commands PEND {/*tree.setRoot(std::move($2)); delete $2;*/}
 ;
 
 declarations:   
-    declarations ',' PIDENTIFIER
-  | declarations ',' PIDENTIFIER '(' NUM ':' NUM ')'
-  | PIDENTIFIER
-  | PIDENTIFIER '(' NUM ':' NUM ')'
+    declarations ',' name {    }
+  | declarations ',' name '(' number ':' number ')' { }
+  | name {  }
+  | name '(' number ':' number ')' {}
 ;
 
 commands:   
@@ -45,8 +58,8 @@ command:
   | IF condition THEN commands ENDIF
   | WHILE condition DO commands ENDWHILE
   | DO commands WHILE condition ENDDO
-  | FOR PIDENTIFIER FROM value TO value DO commands ENDFOR
-  | FOR PIDENTIFIER FROM value DOWNTO value DO commands ENDFOR
+  | FOR name FROM value TO value DO commands ENDFOR
+  | FOR name FROM value DOWNTO value DO commands ENDFOR
   | READ identifier ';'
   | WRITE value ';'
 ;
@@ -70,13 +83,23 @@ condition:
 ;
 
 value:  
-    NUM
+    number 
   | identifier
 ;
 
 identifier:
-    PIDENTIFIER
-  | PIDENTIFIER '(' PIDENTIFIER ')'
-  | PIDENTIFIER '(' NUM ')'
+    name
+  | name '(' name ')'  
+  | name '(' number ')' 
+;
+
+name:
+  PIDENTIFIER {$$ = yylval.str;}
+;
+
+number:
+  NUM   {$$ = yylval.int64;}
 ;
 %%
+
+void yyerror(const char *){}

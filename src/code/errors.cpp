@@ -1,9 +1,17 @@
 #include "../headers/errors.hpp"
 
-void error(const char* msg, int line_no){
-    std::cerr << "\033[0;31m" << "[ERROR] " << msg << " in line "<< line_no << "\033[0m \n";
+void error(std::string msg, int line_no){
+    std::cerr << red << "[ERROR] " << msg << " in line "<< line_no << norm << "\n";
 }
 
-void warning(const char* msg, int line_no){
-    std::cerr << "\033[0;35m" << "[WARNING] " << msg << " in line "<< line_no << "\033[0m \n";
+void error(std::string msg){
+    std::cerr << red << "[ERROR] " << msg << norm << "\n";
+}
+
+void warning(std::string msg, int line_no){
+    std::cerr << violet << "[WARNING] " << msg << " in line "<< line_no << norm << "\n";
+}
+
+void warning(std::string msg){
+    std::cerr << violet << "[WARNING] " << msg << norm << "\n";
 }
