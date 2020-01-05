@@ -5,4 +5,6 @@
 
 #define log(msg) {std::clog<< msg <<'\n';}
 
+typedef long long int64;
+typedef unsigned long long uint64;
 #endif

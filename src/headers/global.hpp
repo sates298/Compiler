@@ -6,7 +6,7 @@
 extern int yylineno;
 
 extern Tree tree;
-extern std::map<unsigned long long, long long> registers;
+extern std::map<uint64, int64> registers;
 
-
+extern bool optimization;
 #endif

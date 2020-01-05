@@ -3,13 +3,13 @@
 }
 
 %union {
-  long long    int64;
+  int64         num;
   std::string  *str;
 
   Command      *cmd;
   Multicommand *mcmd;
   Expression   *expr;
-  Condition   *cond;
+  Condition    *cond;
   Call         *cal;
   Value        *val;
 }
@@ -29,7 +29,7 @@
 // CONDITIONS
 %token EQ NEQ LE GE LEQ GEQ
 
-%type<int64>  number;
+%type<num>  number;
 %type<str>    name;
 
 %type<cal>    identifier;
@@ -107,7 +107,7 @@ name:
 ;
 
 number:
-  NUM   {$$ = yylval.int64;}
+  NUM   {$$ = handleNumber(yylval.num);}
 ;
 %%
 

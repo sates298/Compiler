@@ -5,13 +5,15 @@
 #include "errors.hpp"
 
 void handleVariableDeclaration(Variable var);
-void handleArrayDeclaration(Variable var, long long first, long long last);
+void handleArrayDeclaration(Variable var, int64 first, int64 last);
+
+int64 handleNumber(int64 num);
 
 Call *handleName(std::string name);
 Call *handleArrayByName(std::string name, std::string idx);
-Call *handleArrayByNumber(std::string name, long long idx);
+Call *handleArrayByNumber(std::string name, int64 idx);
 
-Value *handleValueNumber(long long num);
+Value *handleValueNumber(int64 num);
 Value *handleValueIdentifier(Call cal);
 
 Condition *handleCondition(Value left, Value right, ConditionType type);

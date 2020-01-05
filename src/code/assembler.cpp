@@ -1,6 +1,6 @@
 #include "../headers/assembler.hpp"
 
-Asm::Asm(Instruction instr, unsigned long long addr) : instr(instr){
+Asm::Asm(Instruction instr, uint64 addr) : instr(instr){
     switch (instr)
     {
     case PUT:
@@ -20,6 +20,6 @@ Instruction Asm::getInstr(){
     return this -> instr;
 }
 
-unsigned long long Asm::getAddr(){
+uint64 Asm::getAddr(){
     return declared ? this -> addr : 0;
 }

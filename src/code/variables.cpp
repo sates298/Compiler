@@ -2,7 +2,7 @@
 
 Variable::Variable(std::string name) : name(name), type(VAL) {}
 
-void Variable::setValue(long long value){
+void Variable::setValue(int64 value){
     this -> value = value;
 }
 void Variable::setConstant(bool constant){
@@ -15,7 +15,7 @@ void Variable::setDeclared(bool declared){
 std::string Variable::getName(){
     return this -> name;
 }
-long long Variable::getValue(){
+int64 Variable::getValue(){
     return this -> value;
 }
 bool Variable::isConstant(){
@@ -28,7 +28,7 @@ bool Variable::isArray(){
     return this -> type == ARR;
 }
 
-ArrayVariable::ArrayVariable(std::string name ,long long a, long long b) : Variable(name) {
+ArrayVariable::ArrayVariable(std::string name ,int64 a, int64 b) : Variable(name) {
     if (a > b){
         throw -1;
     }else{
@@ -38,7 +38,7 @@ ArrayVariable::ArrayVariable(std::string name ,long long a, long long b) : Varia
     }
 }
 
-void ArrayVariable::setElement(long long idx, std::shared_ptr<Variable> element){
+void ArrayVariable::setElement(int64 idx, std::shared_ptr<Variable> element){
     if (idx < this->firstIdx || idx > this->lastIdx){
         throw -1;
     }else{
@@ -46,7 +46,7 @@ void ArrayVariable::setElement(long long idx, std::shared_ptr<Variable> element)
     }
 }
 
-std::shared_ptr<Variable> ArrayVariable::getElement(long long idx){
+std::shared_ptr<Variable> ArrayVariable::getElement(int64 idx){
     if (idx < this->firstIdx || idx > this->lastIdx){
         throw -1;
     }else{

@@ -13,7 +13,7 @@
 }
 
 [_a-z]+         {yylval.str = new std::string(yytext); return PIDENTIFIER;}
--?[[:digit:]]+    {yylval.int64 = std::stoll(yytext); return NUM;}
+-?[[:digit:]]+    {yylval.num = std::stoll(yytext); return NUM;}
 [ \t]+    /*ignore*/;
 
 

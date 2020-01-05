@@ -1,5 +1,10 @@
 #ifndef ASM_HPP
 #define ASM_HPP
+#include "typedefs.hpp"
+
+#include<vector>
+#include<memory>
+
 
 enum Instruction{
     GET, PUT, LOAD, STORE, LOADI,
@@ -11,12 +16,15 @@ class Asm{
     private:
         Instruction instr;
         bool declared = false;
-        unsigned long long addr;
+        uint64 addr;
     public:
-        Asm(Instruction inst, unsigned long long addr);
+        Asm(Instruction inst, uint64 addr);
         ~Asm(){}
         Instruction getInstr();
-        unsigned long long getAddr();
+        uint64 getAddr();
 };
+
+typedef std::vector<std::shared_ptr<Asm>> asmVec;
+
 
 #endif

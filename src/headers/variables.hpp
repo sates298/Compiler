@@ -12,7 +12,7 @@ enum VariableType{
 class Variable{
     protected:
         std::string name;
-        long long value;
+        int64 value;
         bool constant = false;
         bool declared = false;
         VariableType type;
@@ -20,12 +20,12 @@ class Variable{
         Variable(std::string name);
         ~Variable(){}
 
-        void setValue(long long value);
+        void setValue(int64 value);
         void setConstant(bool constant);
         void setDeclared(bool declared);
 
         std::string getName();
-        long long getValue();
+        int64 getValue();
         bool isConstant();
         bool isDeclared();
         bool isArray();
@@ -36,21 +36,22 @@ class Variable{
 
 class ArrayVariable : public Variable{
     private:
-        std::map<long long, std::shared_ptr<Variable>> elements;
-        long long firstIdx;
-        long long lastIdx;
+        std::map<int64, std::shared_ptr<Variable>> elements;
+        int64 firstIdx;
+        int64 lastIdx;
     public:
-        ArrayVariable(std::string name ,long long a, long long b);
-        void setElement(long long idx, std::shared_ptr<Variable> element);
-        std::shared_ptr<Variable> getElement(long long idx);
+        ArrayVariable(std::string name ,int64 a, int64 b);
+        void setElement(int64 idx, std::shared_ptr<Variable> element);
+        std::shared_ptr<Variable> getElement(int64 idx);
         std::string toString();
 };
 
 struct Call{
+    int64 line;
     std::string name = "";
     bool isFirstIndex;
 
-    long long firstIdx;
+    int64 firstIdx;
     std::string secondIdx = "";
 
     std::string toString();
@@ -58,7 +59,7 @@ struct Call{
 
 struct Value{
     std::shared_ptr<Call> cal = nullptr;
-    long long val;
+    int64 val;
 
     std::string toString();
 };

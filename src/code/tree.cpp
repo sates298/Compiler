@@ -8,6 +8,10 @@ std::map<std::string, std::shared_ptr<Variable>> &Tree::getVariables(){
     return this->variables;
 }
 
+std::set<int64> &Tree::getNumbers(){
+    return this->numbers;
+}
+
 std::vector<std::shared_ptr<CodeBlock>> &Tree::getRoots(){
     return this->roots;
 }

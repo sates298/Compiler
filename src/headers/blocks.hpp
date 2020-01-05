@@ -13,17 +13,19 @@ class CodeBlock{
     protected:
         CodeBlock *parent;
         BlockType blockType;
+        int64 startLine;
         std::vector<std::shared_ptr<Call>> calls;
-        // std::vector<std::shared_ptr<Asm>> assembler;
+        // asmVec assembler;
     public:
-        CodeBlock(BlockType blockType);
+        CodeBlock(BlockType blockType, int64 startLine);
         virtual ~CodeBlock() = default;
         CodeBlock *getParent();
         void setParent(CodeBlock *parent);
         std::map<std::string, std::shared_ptr<Variable>> getLocalVariables();
         BlockType getBlockType();
         std::vector<std::shared_ptr<Call>> &getCalls();
-        // std::vector<std::shared_ptr<Asm>> getAssembler();
+        int64 getStartLine();
+        // asmVec &getAssembler();
 
 
         std::string toString();
@@ -35,13 +37,13 @@ class Command: public CodeBlock{
         CommandType type;    
     private:   
         //to if else block
-        long long firstElseIndex;
+        int64 firstElseIndex;
         //to write block
         Value writeValue;
     public:
-        Command(CommandType type);
-        Command(std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type);
-        Command(std::shared_ptr<CodeBlock> nested, CommandType type);
+        Command(CommandType type, int64 startLine);
+        Command(std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type,int64 startLine);
+        Command(std::shared_ptr<CodeBlock> nested, CommandType type,int64 startLine);
         virtual ~Command() = default;
         std::vector<std::shared_ptr<CodeBlock>> &getNested();
         void appendBlock(std::shared_ptr<CodeBlock> block);
@@ -49,8 +51,8 @@ class Command: public CodeBlock{
         CommandType getType();
 
         //to if else block
-        long long getFirstElseIndex();
-        void setFirstElseIndex(long long idx);
+        int64 getFirstElseIndex();
+        void setFirstElseIndex(int64 idx);
         //to write block
         Value &getValue();
         void setValue(Value val);
@@ -64,8 +66,12 @@ class ForLoop : public Command{
         Value from;
         Value to;
     public:
-        ForLoop(std::string iterator, Value from, Value to, std::shared_ptr<CodeBlock> nested, CommandType type);
-        ForLoop(std::string iterator, Value from, Value to, std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type);
+        ForLoop(std::string iterator, Value from, Value to,
+                 std::shared_ptr<CodeBlock> nested, CommandType type,
+                 int64 startLine);
+        ForLoop(std::string iterator, Value from, Value to,
+                 std::vector<std::shared_ptr<CodeBlock>> nested,
+                 CommandType type, int64 startLine);
         virtual ~ForLoop() = default;
         std::shared_ptr<Variable> getIterator();
         Value &getFrom();
@@ -81,15 +87,15 @@ class Expression : public CodeBlock{
         Value rightValue;
 
         bool resultExists = false;
-        long long result;
+        int64 result;
 
         // void checkResult();
-        // void computeResult(long long a, long long b);
+        // void computeResult(int64 a, int64 b);
     public:
-        Expression(Value leftValue, ExpressionType expr, Value rightValue);
+        Expression(Value leftValue, ExpressionType expr, Value rightValue, int64 startLine);
         virtual ~Expression() = default;
         bool isResultExist();
-        long long getResult();
+        int64 getResult();
         Value &getLeft();
         ExpressionType getExpr();
         Value &getRight();
@@ -107,9 +113,9 @@ class Condition : public CodeBlock{
         bool result;
         
         // void checkResult();
-        // void computeResult(long long a, long long b);
+        // void computeResult(int64 a, int64 b);
     public:
-        Condition(Value leftValue, ConditionType cond, Value rightValue);
+        Condition(Value leftValue, ConditionType cond, Value rightValue, int64 startLine);
         virtual ~Condition() = default;
         bool isResultExist();
         bool getResult();
