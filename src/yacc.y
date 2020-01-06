@@ -41,7 +41,8 @@
 %%
 input:
     program 
-  | error {error("Unrecognized character ", yylineno, true);}
+  | error {error("Unrecognized character", yylineno, false);
+           error("Syntax error", true);}
 ;
 
 program:  
@@ -64,7 +65,7 @@ commands:
 command:  
     identifier ASSIGN expression ';'                    {$$ = handleAssign(*$1, *$3); delete $1; delete $3;}
   | IF condition THEN commands ELSE commands ENDIF      {$$ = handleIfElse(*$2, $4, $6); delete $2; delete $4; delete $6;}
-  | IF condition THEN commands ENDIF                    {$$ = handleIf(*$2, $4); delete $2; delete $4;}
+  | IF condition THEN commands ENDIF                    {$$ = handleIf(*$2, $4); delete $2; delete $4; }
   | WHILE condition DO commands ENDWHILE                {$$ = handleWhile(*$2, $4); delete $2; delete $4;}
   | DO commands WHILE condition ENDDO                   {$$ = handleDoWhile(*$4, $2); delete $2; delete $4;}
   | FOR name FROM value TO value DO commands ENDFOR     {$$ = handleFor(*$2, *$4, *$6, $8); delete $2; delete $4; delete $6; delete $8;}
@@ -107,7 +108,7 @@ name:
 ;
 
 number:
-  NUM   {$$ = handleNumber(yylval.num);}
+  NUM   {$$ = yylval.num;}
 ;
 %%
 

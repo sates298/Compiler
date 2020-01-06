@@ -1,6 +1,6 @@
 BFLAGS=-d -Wconflicts-sr
 CFLAGS=-Wall --pedantic -std=c++17
-
+# CFLAGS = -Weverything -std=c++17
 
 CXX=g++ $(CFLAGS)
 BISON=bison $(BFLAGS)

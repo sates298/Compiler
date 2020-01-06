@@ -9,4 +9,5 @@ extern Tree tree;
 extern std::map<uint64, int64> registers;
 
 extern bool optimization;
+
 #endif

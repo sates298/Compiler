@@ -39,11 +39,7 @@ ArrayVariable::ArrayVariable(std::string name ,int64 a, int64 b) : Variable(name
 }
 
 void ArrayVariable::setElement(int64 idx, std::shared_ptr<Variable> element){
-    if (idx < this->firstIdx || idx > this->lastIdx){
-        throw -1;
-    }else{
-        this->elements[idx] = element;
-    }
+    this->elements[idx] = element;
 }
 
 std::shared_ptr<Variable> ArrayVariable::getElement(int64 idx){

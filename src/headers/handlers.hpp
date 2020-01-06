@@ -4,10 +4,8 @@
 #include "global.hpp"
 #include "errors.hpp"
 
-void handleVariableDeclaration(Variable var);
-void handleArrayDeclaration(Variable var, int64 first, int64 last);
-
-int64 handleNumber(int64 num);
+void handleVariableDeclaration(std::string name);
+void handleArrayDeclaration(std::string name, int64 first, int64 last);
 
 Call *handleName(std::string name);
 Call *handleArrayByName(std::string name, std::string idx);

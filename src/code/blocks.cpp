@@ -2,13 +2,12 @@
 
 // ------------------------------------CODE-BLOCK-------------------------------------
 
-CodeBlock::CodeBlock(BlockType blockType,int64 startLine): blockType(blockType), startLine(startLine){
-    this->parent = nullptr;
-}
-CodeBlock *CodeBlock::getParent(){
+CodeBlock::CodeBlock(BlockType blockType,int64 startLine): blockType(blockType), startLine(startLine){}
+
+std::weak_ptr<CodeBlock> CodeBlock::getParent(){
     return this -> parent;
 }
-void CodeBlock::setParent(CodeBlock *parent){
+void CodeBlock::setParent(std::shared_ptr<CodeBlock> parent){
     this->parent = parent;
 }
 BlockType CodeBlock::getBlockType(){
@@ -17,15 +16,18 @@ BlockType CodeBlock::getBlockType(){
 std::map<std::string, std::shared_ptr<Variable>> CodeBlock::getLocalVariables(){
     CodeBlock *curr = this;
     std::map<std::string, std::shared_ptr<Variable>> localVariables;
-    while(curr->parent != nullptr){
+    while(curr != nullptr){
         if(curr->blockType == CMD && (((Command *)curr)->getType() == CFOR 
-                                || ((Command *)curr)->getType() == CFORDOWN)){
+                                || ((Command*)curr)->getType() == CFORDOWN)){
             ForLoop *cmd = (ForLoop *)(curr);
-            if(cmd -> getType() == CFOR || cmd -> getType() == CFORDOWN){
-                localVariables[cmd->getIterator().get()->getName()] = cmd->getIterator();
-            }
+            localVariables[cmd->getIterator()->getName()] = cmd->getIterator();
         }
+        
+        auto p = curr->getParent().lock();
+        curr->setParent(p);
+        curr = p.get();
     }
+
     return localVariables;
 }
 std::vector<std::shared_ptr<Call>> &CodeBlock::getCalls(){
@@ -40,21 +42,27 @@ int64 CodeBlock::getStartLine(){
 Command::Command(CommandType type,int64 startLine): CodeBlock(CMD,startLine), type(type){}
 
 Command::Command(std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type,int64 startLine): Command(type, startLine){
-    this->appendBlocks(nested);
+    this->nested = std::vector<std::shared_ptr<CodeBlock>>(nested);
 }
 
 Command::Command(std::shared_ptr<CodeBlock> nested, CommandType type,int64 startLine): Command(type, startLine){
-    this->appendBlock(nested);
-}
-
-void Command::appendBlock(std::shared_ptr<CodeBlock> block){
-    this->nested.emplace_back(block);
-    block.get()->setParent(this);
+    this->nested.push_back(nested);
 }
 
 void Command::appendBlocks(std::vector<std::shared_ptr<CodeBlock>> blocks){
-    for(auto b:blocks){
-        this->appendBlock(b);
+    for(auto& b:blocks){
+        this->nested.push_back(b);
+    }
+}
+
+void Command::setParentForAll(){
+    auto p = shared_from_this();
+    for(auto& b:this->nested){
+        b->setParent(p);
+        if(b->getBlockType() == CMD){
+            auto tmp = std::dynamic_pointer_cast<Command>(b);
+            tmp->setParentForAll();
+        }
     }
 }
 
@@ -172,13 +180,13 @@ std::string Command::toString(){
         std::string type = std::to_string(this->type);
         std::string calls = "[";
         for(auto c: this->calls){
-            calls += c.get()->toString();
+            calls += c->toString();
         }
         calls += "]";
 
         std::string nested = "[";
         for(auto n: this->nested){
-            nested += "\t" + n.get()->toString();
+            nested += "\t" + n->toString();
         }
         nested += "]";
         result += "type=" + type;
@@ -194,6 +202,7 @@ std::string Command::toString(){
         }
     }
 
+
     return result;
 }
 
@@ -202,16 +211,16 @@ std::string ForLoop::toString(){
     std::string type = std::to_string(this->type);
     std::string calls = "[";
     for(auto c: this->calls){
-        calls += c.get()->toString();
+        calls += c->toString();
     }
     calls += "]";
 
     std::string nested = "[";
     for(auto n: this->nested){
-        nested += n.get()->toString();
+        nested += n->toString();
     }
     nested += "]";
-    std::string it = this->iterator.get()->toString(); 
+    std::string it = this->iterator->toString(); 
     result += "type=" + type + ", iterator=" + it  + ", from=" + this->from.toString() + ", to=" + this-> to.toString() + ", nested=" + nested + ", calls=" + calls + "}\n";
     return result;
 }

@@ -9,9 +9,9 @@
 #include "assembler.hpp"
 #include "block_types.hpp"
 
-class CodeBlock{
+class CodeBlock {
     protected:
-        CodeBlock *parent;
+        std::weak_ptr<CodeBlock> parent;
         BlockType blockType;
         int64 startLine;
         std::vector<std::shared_ptr<Call>> calls;
@@ -19,8 +19,8 @@ class CodeBlock{
     public:
         CodeBlock(BlockType blockType, int64 startLine);
         virtual ~CodeBlock() = default;
-        CodeBlock *getParent();
-        void setParent(CodeBlock *parent);
+        std::weak_ptr<CodeBlock> getParent();
+        void setParent(std::shared_ptr<CodeBlock> parent);
         std::map<std::string, std::shared_ptr<Variable>> getLocalVariables();
         BlockType getBlockType();
         std::vector<std::shared_ptr<Call>> &getCalls();
@@ -31,7 +31,7 @@ class CodeBlock{
         std::string toString();
 };
 
-class Command: public CodeBlock{
+class Command: public CodeBlock, public std::enable_shared_from_this<Command>{
     protected:
         std::vector<std::shared_ptr<CodeBlock>> nested;
         CommandType type;    
@@ -46,10 +46,11 @@ class Command: public CodeBlock{
         Command(std::shared_ptr<CodeBlock> nested, CommandType type,int64 startLine);
         virtual ~Command() = default;
         std::vector<std::shared_ptr<CodeBlock>> &getNested();
-        void appendBlock(std::shared_ptr<CodeBlock> block);
-        void appendBlocks(std::vector<std::shared_ptr<CodeBlock>> blocks);
         CommandType getType();
 
+        void appendBlocks(std::vector<std::shared_ptr<CodeBlock>> blocks);
+
+        void setParentForAll();
         //to if else block
         int64 getFirstElseIndex();
         void setFirstElseIndex(int64 idx);
@@ -127,7 +128,7 @@ class Condition : public CodeBlock{
 };
 
 struct Multicommand{
-    std::vector<std::shared_ptr<Command>> commands;
+    std::vector<std::shared_ptr<CodeBlock>> commands;
 };
 
 #endif
