@@ -3,7 +3,7 @@
 #include<string>
 #include<memory>
 #include<map>
-#include "typedefs.hpp"
+#include "../typedefs.hpp"
 
 enum VariableType{
     VAL, ARR

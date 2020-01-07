@@ -6,27 +6,23 @@
 #include<map>
 #include<vector>
 #include "variables.hpp"
-#include "assembler.hpp"
 #include "block_types.hpp"
 
 class CodeBlock {
     protected:
         std::weak_ptr<CodeBlock> parent;
         BlockType blockType;
-        int64 startLine;
+        int64 lastLine;
         std::vector<std::shared_ptr<Call>> calls;
-        // asmVec assembler;
     public:
-        CodeBlock(BlockType blockType, int64 startLine);
+        CodeBlock(BlockType blockType, int64 lastLine);
         virtual ~CodeBlock() = default;
         std::weak_ptr<CodeBlock> getParent();
         void setParent(std::shared_ptr<CodeBlock> parent);
         std::map<std::string, std::shared_ptr<Variable>> getLocalVariables();
         BlockType getBlockType();
         std::vector<std::shared_ptr<Call>> &getCalls();
-        int64 getStartLine();
-        // asmVec &getAssembler();
-
+        int64 getLastLine();
 
         std::string toString();
 };
@@ -41,9 +37,9 @@ class Command: public CodeBlock, public std::enable_shared_from_this<Command>{
         //to write block
         Value writeValue;
     public:
-        Command(CommandType type, int64 startLine);
-        Command(std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type,int64 startLine);
-        Command(std::shared_ptr<CodeBlock> nested, CommandType type,int64 startLine);
+        Command(CommandType type, int64 lastLine);
+        Command(std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type,int64 lastLine);
+        Command(std::shared_ptr<CodeBlock> nested, CommandType type,int64 lastLine);
         virtual ~Command() = default;
         std::vector<std::shared_ptr<CodeBlock>> &getNested();
         CommandType getType();
@@ -69,10 +65,10 @@ class ForLoop : public Command{
     public:
         ForLoop(std::string iterator, Value from, Value to,
                  std::shared_ptr<CodeBlock> nested, CommandType type,
-                 int64 startLine);
+                 int64 lastLine);
         ForLoop(std::string iterator, Value from, Value to,
                  std::vector<std::shared_ptr<CodeBlock>> nested,
-                 CommandType type, int64 startLine);
+                 CommandType type, int64 lastLine);
         virtual ~ForLoop() = default;
         std::shared_ptr<Variable> getIterator();
         Value &getFrom();
@@ -93,7 +89,7 @@ class Expression : public CodeBlock{
         // void checkResult();
         // void computeResult(int64 a, int64 b);
     public:
-        Expression(Value leftValue, ExpressionType expr, Value rightValue, int64 startLine);
+        Expression(Value leftValue, ExpressionType expr, Value rightValue, int64 lastLine);
         virtual ~Expression() = default;
         bool isResultExist();
         int64 getResult();
@@ -116,7 +112,7 @@ class Condition : public CodeBlock{
         // void checkResult();
         // void computeResult(int64 a, int64 b);
     public:
-        Condition(Value leftValue, ConditionType cond, Value rightValue, int64 startLine);
+        Condition(Value leftValue, ConditionType cond, Value rightValue, int64 lastLine);
         virtual ~Condition() = default;
         bool isResultExist();
         bool getResult();

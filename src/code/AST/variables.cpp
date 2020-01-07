@@ -1,4 +1,4 @@
-#include "../headers/variables.hpp"
+#include "../../headers/AST/variables.hpp"
 
 Variable::Variable(std::string name) : name(name), type(VAL) {}
 
@@ -57,7 +57,7 @@ std::string Variable::toString(){
     }else{
         ArrayVariable *a = (ArrayVariable *)this;
         auto arr = std::make_shared<ArrayVariable>(*a);
-        result = arr.get()->toString(); 
+        result = arr->toString(); 
     }
     return result;
 }
@@ -67,7 +67,7 @@ std::string ArrayVariable::toString(){
 
     result += ", array=[";
     for(const auto& [key, val]:this->elements){
-        result += "idx=" + std::to_string(key) + ", val=" + val.get()->toString() + ", ";
+        result += "idx=" + std::to_string(key) + ", val=" + val->toString() + ", ";
     }
     result += "]}\n";
     return result;
@@ -86,8 +86,8 @@ std::string Call::toString(){
 
 std::string Value::toString(){
     std::string result = "Value:{val=";
-    if(this->cal.get() != nullptr){
-        result += this->cal.get()->toString();
+    if(this->cal != nullptr){
+        result += this->cal->toString();
     }else{
         result += std::to_string(this->val);
     }

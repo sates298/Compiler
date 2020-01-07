@@ -1,4 +1,4 @@
-#include "../headers/tree.hpp"
+#include "../../headers/AST/tree.hpp"
 
 void Tree::setRoots(std::vector<std::shared_ptr<CodeBlock>> newRoots){
     this->roots = newRoots;
@@ -14,8 +14,4 @@ std::set<int64> &Tree::getNumbers(){
 
 std::vector<std::shared_ptr<CodeBlock>> &Tree::getRoots(){
     return this->roots;
-}
-
-std::vector<std::shared_ptr<Asm>> &Tree::getAssembler(){
-    return this->assembler;
 }

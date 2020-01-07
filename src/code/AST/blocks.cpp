@@ -1,8 +1,8 @@
-#include "../headers/blocks.hpp"
+#include "../../headers/AST/blocks.hpp"
 
 // ------------------------------------CODE-BLOCK-------------------------------------
 
-CodeBlock::CodeBlock(BlockType blockType,int64 startLine): blockType(blockType), startLine(startLine){}
+CodeBlock::CodeBlock(BlockType blockType,int64 lastLine): blockType(blockType), lastLine(lastLine){}
 
 std::weak_ptr<CodeBlock> CodeBlock::getParent(){
     return this -> parent;
@@ -34,18 +34,18 @@ std::vector<std::shared_ptr<Call>> &CodeBlock::getCalls(){
     return this->calls;
 }
 
-int64 CodeBlock::getStartLine(){
-    return this->startLine;
+int64 CodeBlock::getLastLine(){
+    return this->lastLine;
 }
 
 // ------------------------------------COMMAND-------------------------------------
-Command::Command(CommandType type,int64 startLine): CodeBlock(CMD,startLine), type(type){}
+Command::Command(CommandType type,int64 lastLine): CodeBlock(CMD,lastLine), type(type){}
 
-Command::Command(std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type,int64 startLine): Command(type, startLine){
+Command::Command(std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type,int64 lastLine): Command(type, lastLine){
     this->nested = std::vector<std::shared_ptr<CodeBlock>>(nested);
 }
 
-Command::Command(std::shared_ptr<CodeBlock> nested, CommandType type,int64 startLine): Command(type, startLine){
+Command::Command(std::shared_ptr<CodeBlock> nested, CommandType type,int64 lastLine): Command(type, lastLine){
     this->nested.push_back(nested);
 }
 
@@ -90,14 +90,16 @@ void Command::setValue(Value val){
 }
 // ------------------------------------FORLOOP-------------------------------------
 ForLoop::ForLoop(std::string iterator, Value from, Value to,
-                     std::shared_ptr<CodeBlock> nested, CommandType type, int64 startLine):
-                        Command(nested, type, startLine), from(from), to(to) {
+                     std::shared_ptr<CodeBlock> nested, CommandType type, int64 lastLine):
+                        Command(nested, type, lastLine), from(from), to(to) {
     this->iterator = std::make_shared<Variable>(iterator);
+    this->iterator->setDeclared(true);
 }
 ForLoop::ForLoop(std::string iterator, Value from, Value to,
-                 std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type, int64 startLine):
-                    Command(nested, type, startLine), from(from), to(to){
+                 std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type, int64 lastLine):
+                    Command(nested, type, lastLine), from(from), to(to){
     this->iterator = std::make_shared<Variable>(iterator);
+    this->iterator->setDeclared(true);
 }
 
 std::shared_ptr<Variable> ForLoop::getIterator(){
@@ -112,8 +114,8 @@ Value &ForLoop::getTo(){
 }
 // ------------------------------------EXPRESSION-------------------------------------
 
-Expression::Expression(Value leftValue, ExpressionType expr, Value rightValue, int64 startLine)
-    :CodeBlock(EXPR, startLine), leftValue(leftValue), expr(expr), rightValue(rightValue){}
+Expression::Expression(Value leftValue, ExpressionType expr, Value rightValue, int64 lastLine)
+    :CodeBlock(EXPR, lastLine), leftValue(leftValue), expr(expr), rightValue(rightValue){}
 
 bool Expression::isResultExist(){
     return this->resultExists;
@@ -133,8 +135,8 @@ Value &Expression::getRight(){
 
 // ------------------------------------CONDITION-------------------------------------
 
-Condition::Condition(Value leftValue, ConditionType cond, Value rightValue, int64 startLine)
-    :CodeBlock(COND,startLine), leftValue(leftValue), cond(cond), rightValue(rightValue){}
+Condition::Condition(Value leftValue, ConditionType cond, Value rightValue, int64 lastLine)
+    :CodeBlock(COND,lastLine), leftValue(leftValue), cond(cond), rightValue(rightValue){}
 
 bool Condition::isResultExist(){
     return this->resultExists;

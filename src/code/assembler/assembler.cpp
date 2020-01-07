@@ -1,4 +1,4 @@
-#include "../headers/assembler.hpp"
+#include "../../headers/assembler/assembler.hpp"
 
 Asm::Asm(Instruction instr, uint64 addr) : instr(instr){
     switch (instr)

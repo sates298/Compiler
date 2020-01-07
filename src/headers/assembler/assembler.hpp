@@ -1,6 +1,6 @@
 #ifndef ASM_HPP
 #define ASM_HPP
-#include "typedefs.hpp"
+#include "../typedefs.hpp"
 
 #include<vector>
 #include<memory>

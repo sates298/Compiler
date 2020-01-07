@@ -1,4 +1,4 @@
-#include "../headers/handlers.hpp"
+#include "../../headers/AST/handlers.hpp"
 
 void handleVariableDeclaration(std::string name){
     auto it = tree.getVariables().find(name);
@@ -16,7 +16,7 @@ void handleArrayDeclaration(std::string name, int64 first, int64 last){
             std::shared_ptr<ArrayVariable> newArr = std::make_shared<ArrayVariable>(name, first, last);
             tree.getVariables()[name] = newArr;
         }catch(int i){
-            error("array " + name + " has wrong boudns", "You could swap values of indexes like: " + name 
+            error("array " + name + " has wrong boudns", "You could swap values of indexes like: "+ cyan + name 
                     + "(" + std::to_string(last) + ":" + std::to_string(first) + ")",true);
         }
     }else{
