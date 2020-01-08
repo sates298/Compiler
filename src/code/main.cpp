@@ -1,10 +1,11 @@
-#include "../yacc.hpp"
-#include "../headers/transitional/validator.hpp"
+#include "../headers/program.hpp"
+
+bool optimization = false;
 
 int main(int argc, const char* argv[]){
 
-    yyparse();
-    
+
+    run();
     // for(const auto& c:tree.getNumbers()){
     //     log(std::to_string(c));
     // }
@@ -15,7 +16,8 @@ int main(int argc, const char* argv[]){
     //     log(r->toString());
     //     std::clog << "root " << r << r->toString() << "\n";
     // }
-
-    valid();
+    for(const auto& c: code){
+        log(c->toString());
+    }
     return 0;
 }

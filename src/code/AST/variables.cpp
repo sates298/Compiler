@@ -8,8 +8,8 @@ void Variable::setValue(int64 value){
 void Variable::setConstant(bool constant){
     this -> constant = constant;
 }
-void Variable::setDeclared(bool declared){
-    this -> declared = declared;
+void Variable::setInitialized(bool initialized){
+    this -> initialized = initialized;
 }
 
 std::string Variable::getName(){
@@ -21,8 +21,8 @@ int64 Variable::getValue(){
 bool Variable::isConstant(){
     return this -> constant;
 }
-bool Variable::isDeclared(){
-    return this -> declared;
+bool Variable::isInitialized(){
+    return this -> initialized;
 }
 bool Variable::isArray(){
     return this -> type == ARR;

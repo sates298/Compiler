@@ -14,7 +14,7 @@ class Variable{
         std::string name;
         int64 value;
         bool constant = false;
-        bool declared = false;
+        bool initialized = false;
         VariableType type;
     public:
         Variable(std::string name);
@@ -22,12 +22,12 @@ class Variable{
 
         void setValue(int64 value);
         void setConstant(bool constant);
-        void setDeclared(bool declared);
+        void setInitialized(bool initialized);
 
         std::string getName();
         int64 getValue();
         bool isConstant();
-        bool isDeclared();
+        bool isInitialized();
         bool isArray();
 
         std::string toString();

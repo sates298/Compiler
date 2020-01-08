@@ -12,6 +12,8 @@ enum Instruction{
      DEC, JUMP, JPOS, JZERO, JNEG, HALT
 };
 
+std::string instructionToString(Instruction instr);
+
 class Asm{
     private:
         Instruction instr;

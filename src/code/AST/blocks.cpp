@@ -21,6 +21,7 @@ std::map<std::string, std::shared_ptr<Variable>> CodeBlock::getLocalVariables(){
                                 || ((Command*)curr)->getType() == CFORDOWN)){
             ForLoop *cmd = (ForLoop *)(curr);
             localVariables[cmd->getIterator()->getName()] = cmd->getIterator();
+            
         }
         
         auto p = curr->getParent().lock();
@@ -93,13 +94,13 @@ ForLoop::ForLoop(std::string iterator, Value from, Value to,
                      std::shared_ptr<CodeBlock> nested, CommandType type, int64 lastLine):
                         Command(nested, type, lastLine), from(from), to(to) {
     this->iterator = std::make_shared<Variable>(iterator);
-    this->iterator->setDeclared(true);
+    this->iterator->setInitialized(true);
 }
 ForLoop::ForLoop(std::string iterator, Value from, Value to,
                  std::vector<std::shared_ptr<CodeBlock>> nested, CommandType type, int64 lastLine):
                     Command(nested, type, lastLine), from(from), to(to){
     this->iterator = std::make_shared<Variable>(iterator);
-    this->iterator->setDeclared(true);
+    this->iterator->setInitialized(true);
 }
 
 std::shared_ptr<Variable> ForLoop::getIterator(){

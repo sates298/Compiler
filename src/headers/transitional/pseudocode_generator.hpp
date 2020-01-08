@@ -4,41 +4,51 @@
 #include "transitional_state.hpp"
 #include "support.hpp"
 
-#define _PUSH(a) code.emplace_back(a)
+#define _PUSH(a) {\
+    code.emplace_back(a);\
+    if(!waitingJumps[k].empty()){\
+        for(auto& j:waitingJumps[k]){\
+            j->setJumpReference(a);\
+        }\
+    }\
+    k++;\
+}
+#define _WAIT_JUMP(a, b) {\
+    waitingJumps[b].emplace_back(a);\
+}
 
-void generatePseudoCode();
 void generateConstantsRegisters();
 
-void generate(CodeBlock *block, bool inJump);
+void generate(CodeBlock *block);
 
-void generateCmd(Command *cmd, bool inJump);
+void generateCmd(Command *cmd);
 
-void generateAssign(Command *cmd, bool inJump);
-void generateIf(Command *cmd, bool inJump);
-void generateIfElse(Command *cmd, bool inJump);
-void generateWhile(Command *cmd, bool inJump);
-void generateDoWhile(Command *cmd, bool inJump);
-void generateFor(ForLoop *fl, bool inJump);
-void generateForDown(ForLoop *fl, bool inJump);
-void generateRead(Command *cmd, bool inJump);
-void generateWrite(Command *cmd, bool inJump);
+void generateAssign(Command *cmd);
+void generateIf(Command *cmd);
+void generateIfElse(Command *cmd);
+void generateWhile(Command *cmd);
+void generateDoWhile(Command *cmd);
+void generateFor(ForLoop *fl);
+void generateForDown(ForLoop *fl);
+void generateRead(Command *cmd);
+void generateWrite(Command *cmd);
 
-void generateExpr(Expression *exp, bool inJump);
+void generateExpr(Expression *exp);
 
-void generateNull(Expression *exp, bool inJump);
-void generatePlus(Expression *exp, bool inJump);
-void generateMinus(Expression *exp, bool inJump);
-void generateTimes(Expression *exp, bool inJump);
-void generateDiv(Expression *exp, bool inJump);
-void generateMod(Expression *exp, bool inJump);
+void generateNull(Expression *exp);
+void generatePlus(Expression *exp);
+void generateMinus(Expression *exp);
+void generateTimes(Expression *exp);
+void generateDiv(Expression *exp);
+void generateMod(Expression *exp);
 
-void generateCond(Condition *cond, bool inJump);
+void generateCond(Condition *cond);
 
-void generateEqual(Condition *cond, bool inJump);
-void generateNotEqual(Condition *cond, bool inJump);
-void generateLesser(Condition *cond, bool inJump);
-void generateGreater(Condition *cond, bool inJump);
-void generateLesserEqual(Condition *cond, bool inJump);
-void generateGreaterEqual(Condition *cond, bool inJump);
+void generateEqual(Condition *cond);
+void generateNotEqual(Condition *cond);
+void generateLesser(Condition *cond);
+void generateGreater(Condition *cond);
+void generateLesserEqual(Condition *cond);
+void generateGreaterEqual(Condition *cond);
 
 #endif

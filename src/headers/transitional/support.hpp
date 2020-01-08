@@ -8,4 +8,5 @@ int64 getValueFromConstant(Value v);
 bool isInLoop(CodeBlock *c);
 
 std::string getCallName(Call c);
+std::string getValueName(Value val);
 #endif

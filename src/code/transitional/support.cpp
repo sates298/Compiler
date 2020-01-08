@@ -69,10 +69,18 @@ bool isInLoop(CodeBlock *c){
 
 std::string getCallName(Call c){
     if(c.isFirstIndex){
-        return c.name + std::to_string(c.firstIdx);
+        return c.name + ":" + std::to_string(c.firstIdx);
     }else if(c.secondIdx != ""){
-        return c.name + c.secondIdx;
+        return c.name + ":" + c.secondIdx;
     }else{
         return c.name;
+    }
+}
+
+std::string getValueName(Value val){
+    if(val.cal != nullptr){
+        return getCallName(*(val.cal.get()));
+    }else{
+        return std::to_string(val.val);
     }
 }

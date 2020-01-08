@@ -1,4 +1,5 @@
 #include "../../headers/transitional/validator.hpp"
+#include "../../headers/transitional/transitional_state.hpp"
 
 void valid(){
     for(auto& r: tree.getRoots()){
@@ -19,7 +20,7 @@ void valid(CodeBlock *block){
     }
 }
 
-ValidVar validDeclaredCall(Call cal, CodeBlock *parent){
+ValidVar validInitializedCall(Call cal, CodeBlock *parent){
     std::string name = cal.name;
     bool arrayCall = cal.isFirstIndex || cal.secondIdx != "";
     auto declared = tree.getVariables();
@@ -43,12 +44,13 @@ ValidVar validDeclaredCall(Call cal, CodeBlock *parent){
         error("Wrong call to variable " + found->getName(), "You need to delete '" + cyan + "(?)" + green + "' block",cal.line, true);
     }else if(!arrayCall && found->isArray()){
         error("Wrong call to array " + found->getName(),
-         "You need to add call to exact element like '" + cyan + found->getName() + "(x)" + green +"', where x is valid index.", cal.line, true);
+         "You need to add call to exact element like '" + cyan + found->getName() + "(?)" + green + "'", cal.line, true);
     }
 
     if(!arrayCall){
         r.isConstant = found->isConstant();
-        r.isDeclared = found->isDeclared();
+        log(std::to_string(r.isConstant) + found->toString())
+        r.isInitialized = found->isInitialized();
         return r;
     }
     
@@ -57,23 +59,30 @@ ValidVar validDeclaredCall(Call cal, CodeBlock *parent){
         indexCall.line = cal.line;
         indexCall.name = cal.secondIdx;
         indexCall.isFirstIndex = false;
-        auto isIdx = validDeclaredCall(indexCall, parent);
-        
-        if(isIdx.isDeclared && !isIdx.isConstant){
+        auto isIdx = validInitializedCall(indexCall, parent);
+        log(std::to_string(isIdx.isConstant))
+        if(!isIdx.isInitialized){
+            error("Call to array " + cal.name + " by uninitialized variable", cal.line, true);
+        }else if(!isIdx.isConstant){
             warning("Call to array " + cal.name + " by not constant index", cal.line);
-        }else if(!isIdx.isDeclared){
-            error("Call to array " + cal.name + " by undeclared variable", cal.line);
         }else{
-            auto i = tree.getVariables()[cal.secondIdx]->getValue();
-            auto v = (ArrayVariable *)(tree.getVariables()[cal.name].get());
+            auto i = declared[cal.secondIdx]->getValue();
+            auto v = (ArrayVariable *)(declared[cal.name].get());
             try{
                 auto el = v->getElement(i);
+                bool isKnown = false;
                 if(el != nullptr){
                     r.isConstant = el->isConstant();
-                    r.isDeclared = el->isDeclared();
+                    r.isInitialized = el->isInitialized();
+                    isKnown = true;
                 }else{
                     r.isConstant = false;
-                    r.isDeclared = false;
+                    r.isInitialized = true;
+                    isKnown = false;
+                }
+                if((isKnown && !r.isInitialized) || !isKnown){
+                    //todo sprawdzić bug
+                    warning("Wanted element of array " + cal.name + " could be uninitialized", cal.line);
                 }
             }catch(int i){
                 warning("Call to element out of the array", cal.line);
@@ -90,27 +99,33 @@ ValidVar validDeclaredCall(Call cal, CodeBlock *parent){
         auto el = f->getElement(idx);
         if(el != nullptr){
             r.isConstant = el->isConstant();
-            r.isDeclared = el->isDeclared();
+            r.isInitialized = true;
+            if(!r.isConstant){
+                warning("Call to array " + cal.name + " by not constant index", cal.line);
+            }
             return r;
         }
     }catch(int i){
         warning("Call to element out of the array", cal.line);
     }
+    r.isConstant = false;
+    r.isInitialized = false;
+    return r;
 }
 
 ValidVar validVal(Value *val, CodeBlock *parent){
     
     if(val->cal != nullptr){
-        auto declared = validDeclaredCall(*(val->cal.get()), parent);
-        if(!declared.isDeclared){
-            error("Wanted value is undeclared",val->cal->line, true);
+        auto initialized = validInitializedCall(*(val->cal.get()), parent);
+        if(!initialized.isInitialized){
+            error("Wanted value is uninitialized",val->cal->line, true);
         }
-        return declared;
+        return initialized;
     }else{
         ValidVar r = ValidVar();
         r.isIterator = false;
         r.isConstant = true;
-        r.isDeclared = true;
+        r.isInitialized = true;
         return r;
     }
 }
@@ -130,17 +145,17 @@ void valid(Command *cmd){
         validAssign(cmd);
     }else if(cmd->getType() == CIF || cmd->getType() == CIFELSE){
         validIf(cmd);
-        for(auto& n: cmd->getNested()){
-            valid(n.get());
+        for(unsigned int i=1; i<cmd->getNested().size(); i++){
+            valid(cmd->getNested()[i].get());
         }
     }else if(cmd->getType() == CWHILE) {
         validWhile(cmd);
-        for(auto& n: cmd->getNested()){
-            valid(n.get());
+        for(unsigned int i=1; i<cmd->getNested().size(); i++){
+            valid(cmd->getNested()[i].get());
         }
     }else if(cmd->getType() == CDOWHILE){
-        for(auto& n: cmd->getNested()){
-            valid(n.get());
+        for(unsigned int i=1; i<cmd->getNested().size(); i++){
+            valid(cmd->getNested()[i].get());
         }
         validWhile(cmd);
     }
@@ -150,46 +165,124 @@ void valid(Command *cmd){
 void validWrite(Command *cmd){
     auto c = cmd->getValue().cal;
     if(c != nullptr){
-        auto r = validDeclaredCall(*(c.get()), cmd);
-        if(!r.isDeclared){
-            error("Attempting to WRITE undeclared value",cmd->getLastLine(), false);
+        auto r = validInitializedCall(*(c.get()), cmd);
+        if(!r.isInitialized){
+            error("Attempting to WRITE uninitialized value",cmd->getLastLine(), false);
         }
     }
 }
 
 void validRead(Command *cmd){
-    auto v = validDeclaredCall(*(cmd->getCalls()[0].get()), cmd);
+    auto v = validInitializedCall(*(cmd->getCalls()[0].get()), cmd);
     if(v.isIterator){
         error("Attempting to change iterator",cmd->getLastLine(), true);
     }
-    auto name = cmd->getCalls()[0]->name;
-    tree.getVariables()[name]->setDeclared(true);
-    tree.getVariables()[name]->setConstant(false);
+    auto call = cmd->getCalls()[0];
+    auto var = tree.getVariables()[call->name];
+    if(var->isArray()){
+        auto arr = (ArrayVariable *)(var.get());
+        if(call->isFirstIndex){
+            try{
+                auto el = arr->getElement(call->firstIdx);
+                if(el != nullptr){
+                    el->setConstant(false);
+                    el->setInitialized(true);
+                }else{
+                    std::string varName = call->name + ":" + std::to_string(call->firstIdx);
+                    auto ell = std::make_shared<Variable>(varName);
+                    ell->setConstant(false);
+                    ell->setInitialized(true);
+                    arr->setElement(call->firstIdx, ell);
+                }
+            }catch(int i){
+                //warning already printed
+            }
+        }else{
+            if(tree.getVariables()[call->name]->isConstant()){
+                auto val = tree.getVariables()[call->name]->getValue();
+                try{
+                    auto arr = (ArrayVariable *)(tree.getVariables()[call->name].get());
+                    var = arr->getElement(val);
+                    if(var == nullptr){
+                        std::string varName = call->name + ":" + call->secondIdx;
+                        var = std::make_shared<Variable>(varName);
+                        arr->setElement(val, var);
+                        var->setConstant(false);
+                        var->setInitialized(true);
+                    }
+                }catch(int i){
+                    //warning already printed
+                }
+            }else{
+                var = nullptr;
+            }
+        }
+    }else{
+        var->setInitialized(true);
+        var->setConstant(false);
+    }
 }
 
 void validAssign(Command *cmd){
-    auto v = validDeclaredCall(*(cmd->getCalls()[0].get()), cmd);
+    auto v = validInitializedCall(*(cmd->getCalls()[0].get()), cmd);
     if(v.isIterator){
         error("Attempting to change iterator",cmd->getLastLine(), true);
     }
-    auto name = cmd->getCalls()[0]->name;
+    auto call = cmd->getCalls()[0];
     
 
     auto exp = std::dynamic_pointer_cast<Expression>(cmd->getNested()[0]);
     auto get = validExp(exp.get());
-    auto var = tree.getVariables()[name];
+    auto name = call->name;
+    std::shared_ptr<Variable> var;
+    if(call->isFirstIndex){
+        try{
+            auto arr = (ArrayVariable *)(tree.getVariables()[name].get());
+            var = arr->getElement(call->firstIdx);
+            if(var == nullptr){
+                std::string varName = call->name + ":" + std::to_string(call->firstIdx);
+                var = std::make_shared<Variable>(varName);
+                arr->setElement(call->firstIdx, var);
+            }
+        }catch(int i){
+            //warning already printed
+        }
+    }else if(call->secondIdx != ""){
+        if(tree.getVariables()[name]->isConstant()){
+            auto val = tree.getVariables()[name]->getValue();
+            try{
+                auto arr = (ArrayVariable *)(tree.getVariables()[name].get());
+                var = arr->getElement(val);
+                if(var == nullptr){
+                    std::string varName = call->name + ":" + call->secondIdx;
+                    var = std::make_shared<Variable>(varName);
+                    arr->setElement(val, var);
+                }
+            }catch(int i){
+                //warning already printed
+            }
+        }else{
+            var = nullptr;
+        }
+    }else{
+        var = tree.getVariables()[name];
+    }
     
-    if(get.isValue){
-        if(!var->isDeclared()){
-            var->setDeclared(true);
-            var->setConstant(true);
-            var->setValue(get.value);
+    if(var != nullptr){
+        if(get.isValue){
+            if(!var->isInitialized()){
+                var->setConstant(true);
+                var->setValue(get.value);
+            }else{
+                var->setConstant(false);
+                var->setValue(get.value);
+            }
         }else{
             var->setConstant(false);
         }
-    }else{
-        var->setConstant(false);
+        var->setInitialized(true);
     }
+        
 }
 
 void validIf(Command *cmd){
@@ -222,7 +315,7 @@ void validFor(ForLoop *forl){
     if(p != nullptr){
         auto vars = p->getLocalVariables();
         if(vars.find(name) != vars.end() || globals.find(name) != globals.end()){
-            error ("variable " + name + " is already initialized", true);
+            error ("variable " + name + " is already declared", true);
         }
     }
 
@@ -263,7 +356,7 @@ ValidExp validExp(Expression *expr){
     exp.isValue = false;
     if(expr->getExpr() == ENULL){
         if(!isInLoop(expr)){
-            if(left.isDeclared && left.isConstant){
+            if(left.isInitialized && left.isConstant){
                 exp.isValue = true;
                 exp.value = getValueFromConstant(expr->getLeft());
                 return exp;

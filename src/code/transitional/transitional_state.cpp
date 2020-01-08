@@ -1,6 +1,6 @@
 #include "../../headers/transitional/transitional_state.hpp"
 
-PseudoAsm::PseudoAsm(uint64 k, Instruction i, std::string arg, bool jump) : index(k), instr(i), argument(arg), inJump(jump){
+PseudoAsm::PseudoAsm(uint64 k, Instruction i, std::string arg) : index(k), instr(i), argument(arg){
 }
 void PseudoAsm::shiftCode(uint64 k, std::vector<std::shared_ptr<PseudoAsm>> code){
     for(auto& a: code){
@@ -12,19 +12,31 @@ uint64 PseudoAsm::getIndex(){
 }
 void PseudoAsm::shiftIndex(uint64 s){
     this->index += s;
-    if(this->instr == JUMP || this->instr == JZERO 
-    || this->instr == JPOS || this->instr == JNEG){
-        uint64 arg = std::stoull(this->argument);
-        arg+=s;
-        this->argument = std::to_string(arg); 
-    }
 }
-bool PseudoAsm::isInJump(){
-    return this->inJump;
+void PseudoAsm::setJumpReference(std::shared_ptr<PseudoAsm> reference){
+    this->jumpReference = reference;
+}
+
+std::shared_ptr<PseudoAsm> PseudoAsm::getJumpReference(){
+    return this->jumpReference;
 }
 Instruction PseudoAsm::getInstr(){
     return this->instr;
 }
 std::string PseudoAsm::getArgument(){
     return this->argument;
+}
+
+std::string PseudoAsm::toString(){
+    std::string result = std::to_string(this->index) + ". ";
+    std::string instr = instructionToString(this->instr);
+    std::string call = this->argument;
+
+    result += instr + " ";
+    if(call != "null"){
+        result += call;
+    }else if(this->jumpReference != nullptr){
+        result += std::to_string(this->jumpReference->index);
+    }
+    return result;
 }

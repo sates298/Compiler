@@ -38,13 +38,12 @@ assembler:
 	$(CXX) -o assembler.o -c code/assembler/assembler.cpp
 
 main: trans assembler
-	$(CXX) -o global.o -c code/global.cpp
 	$(CXX) -o errors.o -c code/errors.cpp
 	$(CXX) -o main.o -c code/main.cpp
 
 compiler: parser main
 	$(CXX) -o compiler lexer.o yacc.o handlers.o assembler.o asm_generator.o variables.o \
-		 blocks.o tree.o validator.o transitional.o support.o pseudocode.o global.o errors.o main.o 
+		 blocks.o tree.o validator.o transitional.o support.o pseudocode.o errors.o main.o 
 
 test:
 	./compiler < ../tests/test.imp > ../tests/test.mr

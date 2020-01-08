@@ -1,5 +1,7 @@
 #include "../../headers/AST/tree.hpp"
 
+Tree tree;
+
 void Tree::setRoots(std::vector<std::shared_ptr<CodeBlock>> newRoots){
     this->roots = newRoots;
 }

@@ -23,3 +23,43 @@ Instruction Asm::getInstr(){
 uint64 Asm::getAddr(){
     return declared ? this -> addr : 0;
 }
+
+std::string instructionToString(Instruction instr){
+    switch (instr)
+    {
+    case GET:
+        return "GET";
+    case PUT:
+        return "PUT";
+    case LOAD:
+        return "LOAD";
+    case STORE:
+        return "STORE";
+    case LOADI:
+        return "LOADI";
+    case STOREI:
+        return "STOREI";
+    case ADD:
+        return "ADD";
+    case SUB:
+        return "SUB";
+    case SHIFT:
+        return "SHIFT";
+    case INC:
+        return "INC";
+    case DEC:
+        return "DEC";
+    case JUMP:
+        return "JUMP";
+    case JPOS:
+        return "JPOS";
+    case JZERO:
+        return "JZERO";
+    case JNEG:
+        return "JNEG";
+    case HALT:
+        return "HALT";
+    default:
+        return "null";
+    }
+}

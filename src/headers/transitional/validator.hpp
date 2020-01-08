@@ -5,7 +5,7 @@
 #include "../errors.hpp"
 
 struct ValidVar{
-    bool isDeclared;
+    bool isInitialized;
     bool isConstant;
 
     bool isIterator;
@@ -21,9 +21,8 @@ struct ValidCond{
     bool value;
 };
 
-void valid();
 void valid(CodeBlock *block);
-ValidVar validDeclaredCall(Call cal, CodeBlock *parent);
+ValidVar validInitializedCall(Call cal, CodeBlock *parent);
 ValidVar validVal(Value val, CodeBlock *parent);
 void valid(Command *cmd);
 void validWrite(Command *cmd);

@@ -6,7 +6,6 @@
 extern int yylineno;
 
 extern Tree tree;
-
 extern bool optimization;
 
 #endif
