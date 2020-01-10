@@ -32,6 +32,7 @@ struct PseudoRegister{
     bool isOffset;
     int64 offsetVal;
     bool isArray;
+    int64 sizeArr;
     bool isIterator;
     Variable *var = nullptr;
 
@@ -47,6 +48,7 @@ extern std::map<uint64, pseudoVec> waitingJumps;
 void generatePseudoCode();
 void generatePseudoRegisters();
 void valid();
+void optimizeCode();
 
 
 #endif

@@ -20,7 +20,7 @@ void valid(CodeBlock *block){
     }
 }
 
-ValidVar validInitializedCall(Call cal, CodeBlock *parent){
+ValidVar validCall(Call cal, CodeBlock *parent, bool inAssign){
     std::string name = cal.name;
     bool arrayCall = cal.isFirstIndex || cal.secondIdx != "";
     auto declared = tree.getVariables();
@@ -76,7 +76,7 @@ ValidVar validInitializedCall(Call cal, CodeBlock *parent){
                     r.isInitialized = true;
                     isKnown = false;
                 }
-                if((isKnown && !r.isInitialized) || !isKnown){
+                if(((isKnown && !r.isInitialized) || !isKnown) && !inAssign){
                     //todo sprawdzić bug
                     warning("Wanted element of array " + cal.name + " could be uninitialized", cal.line);
                 }
@@ -107,6 +107,10 @@ ValidVar validInitializedCall(Call cal, CodeBlock *parent){
     r.isConstant = false;
     r.isInitialized = false;
     return r;
+}
+
+ValidVar validInitializedCall(Call cal, CodeBlock *parent){
+    return validCall(cal, parent, false);
 }
 
 ValidVar validVal(Value *val, CodeBlock *parent){
@@ -169,7 +173,7 @@ void validWrite(Command *cmd){
 }
 
 void validRead(Command *cmd){
-    auto v = validInitializedCall(*(cmd->getCalls()[0].get()), cmd);
+    auto v = validCall(*(cmd->getCalls()[0].get()), cmd, true);
     if(v.isIterator){
         error("Attempting to change iterator",cmd->getLastLine(), true);
     }
@@ -184,11 +188,11 @@ void validRead(Command *cmd){
                     el->setConstant(false);
                     el->setInitialized(true);
                 }else{
-                    std::string varName = call->name + ":" + std::to_string(call->firstIdx);
-                    auto ell = std::make_shared<Variable>(varName);
-                    ell->setConstant(false);
-                    ell->setInitialized(true);
-                    arr->setElement(call->firstIdx, ell);
+                    // std::string varName = call->name + ":" + std::to_string(call->firstIdx);
+                    // auto ell = std::make_shared<Variable>(varName);
+                    // ell->setConstant(false);
+                    // ell->setInitialized(true);
+                    // arr->setElement(call->firstIdx, ell);
                 }
             }catch(int i){
                 //warning already printed
@@ -201,8 +205,8 @@ void validRead(Command *cmd){
                     var = arr->getElement(val);
                     if(var == nullptr){
                         std::string varName = call->name + ":" + call->secondIdx;
-                        var = std::make_shared<Variable>(varName);
-                        arr->setElement(val, var);
+                        // var = std::make_shared<Variable>(varName);
+                        // arr->setElement(val, var);
                         var->setConstant(false);
                         var->setInitialized(true);
                     }
@@ -220,7 +224,7 @@ void validRead(Command *cmd){
 }
 
 void validAssign(Command *cmd){
-    auto v = validInitializedCall(*(cmd->getCalls()[0].get()), cmd);
+    auto v = validCall(*(cmd->getCalls()[0].get()), cmd,true);
     if(v.isIterator){
         error("Attempting to change iterator",cmd->getLastLine(), true);
     }
@@ -237,8 +241,8 @@ void validAssign(Command *cmd){
             var = arr->getElement(call->firstIdx);
             if(var == nullptr){
                 std::string varName = call->name + ":" + std::to_string(call->firstIdx);
-                var = std::make_shared<Variable>(varName);
-                arr->setElement(call->firstIdx, var);
+                // var = std::make_shared<Variable>(varName);
+                // arr->setElement(call->firstIdx, var);
             }
         }catch(int i){
             //warning already printed
@@ -250,9 +254,9 @@ void validAssign(Command *cmd){
                 auto arr = (ArrayVariable *)(tree.getVariables()[name].get());
                 var = arr->getElement(val);
                 if(var == nullptr){
-                    std::string varName = call->name + ":" + call->secondIdx;
-                    var = std::make_shared<Variable>(varName);
-                    arr->setElement(val, var);
+                    // std::string varName = call->name + ":" + call->secondIdx;
+                    // var = std::make_shared<Variable>(varName);
+                    // arr->setElement(val, var);
                 }
             }catch(int i){
                 //warning already printed

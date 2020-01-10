@@ -45,8 +45,12 @@ compiler: parser main
 	$(CXX) -o compiler lexer.o yacc.o handlers.o assembler.o asm_generator.o variables.o \
 		 blocks.o tree.o validator.o transitional.o support.o pseudocode.o errors.o main.o 
 
-test:
-	./compiler < ../tests/test.imp > ../tests/test.mr
+test_compile:
+	./compiler -d ../tests/test.imp ../tests/test.mr
+
+test_compile_and_run:
+	./compiler ../tests/test.imp ../tests/test.mr
+	../maszyna_wirtualna/maszyna_wirtualna ../tests/test.mr
 
 clean:
 	$(RM) *.o

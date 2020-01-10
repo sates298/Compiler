@@ -1,11 +1,19 @@
 [test]
 DECLARE
-    a, b, c(-11:100), arr(400:401)
+    a, b(-1:2), c(15:16)
 BEGIN
-    b ASSIGN -10;
-    a ASSIGN -11;
-    c(a) ASSIGN -12;
-    FOR i FROM c(a) TO arr(400) DO
-        WRITE a;
-    ENDFOR
+    c(15) ASSIGN -4;
+    a ASSIGN 8 PLUS 7;
+    b(1) ASSIGN -15 TIMES c(a);
+    a ASSIGN 1;
+    WRITE a;
+    WRITE b(a);
+    [a ASSIGN -2;
+    c(a) ASSIGN b;
+    arr(1) ASSIGN 10;
+    FOR i FROM c(a) TO arr(1) DO
+        b ASSIGN i PLUS a;
+        WRITE b;
+        a ASSIGN 2 PLUS c(a);
+    ENDFOR]
 END

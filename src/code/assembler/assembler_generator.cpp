@@ -1,7 +1,7 @@
 #include "../../headers/assembler/assembler_generator.hpp"
 
 uint64 addr = 0;
-uint64 regIdx = 1;
+uint64 regIdx = 1; //0 - accumulator
 asmVec finalCode;
 
 auto reset = std::make_shared<Asm>(SUB, 0);
@@ -12,48 +12,20 @@ auto put = std::make_shared<Asm>(PUT, 0);
 auto halt = std::make_shared<Asm>(HALT, 0);
 
 void generateRealRegisters(){
-    std::vector<std::shared_ptr<PseudoRegister>> offsets;
     for(auto& [k,r] : registers){
+        if(k == "ACC"){
+            continue;
+        }
         if(!r->isArray){
             r->index = regIdx;
             regIdx++;
         }else{
-            auto arr = (ArrayVariable *)r->var;
-            auto from = arr->getFrom(), to = arr->getTo();
-            int64 size = to - from + 1;
-            
-            auto offset = std::make_shared<PseudoRegister>();
-            offset->index = regIdx;
-            regIdx++;
-            offset->isNumber = true;
-            offset->isOffset = true;
-            offset->offsetVal = regIdx - from;
-            offset->name = r->name + "-off";
-            offsets.emplace_back(offset);
+            auto off = registers[r->name + "-off"];
+            off->offsetVal += regIdx; 
             r->index = regIdx;
-            regIdx += size;
+            regIdx += r->sizeArr;
         }
     }
-    for(auto& o: offsets){
-        registers[o->name] = o;
-    }
-    //creating memory to temporary values
-    auto tmp = std::make_shared<PseudoRegister>();
-    tmp->index = regIdx;
-    regIdx++;
-    tmp->name = "TMP";
-    registers[tmp->name] = tmp;
-
-    auto tmp2 = std::make_shared<PseudoRegister>();
-    tmp2->index = regIdx;
-    regIdx++;
-    tmp2->name = "TMP2";
-    registers[tmp2->name] = tmp2;
-    //creating pseudo accumulator
-    auto acc = std::make_shared<PseudoRegister>();
-    acc->index = 0;
-    acc->name = "acc";
-    registers[acc->name] = acc;
 }
 
 void generateNumber(PseudoRegister *pseudo){

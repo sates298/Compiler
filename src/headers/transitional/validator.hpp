@@ -22,6 +22,7 @@ struct ValidCond{
 };
 
 void valid(CodeBlock *block);
+ValidVar validCall(Call cal, CodeBlock *parent, bool inAssign);
 ValidVar validInitializedCall(Call cal, CodeBlock *parent);
 ValidVar validVal(Value val, CodeBlock *parent);
 void valid(Command *cmd);

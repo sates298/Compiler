@@ -4,7 +4,7 @@
 #include "transitional_state.hpp"
 #include "support.hpp"
 
-#define _PUSH(a) {\
+#define _PUSH_PSEUDO(a) {\
     code.emplace_back(a);\
     if(!waitingJumps[k].empty()){\
         for(auto& j:waitingJumps[k]){\
@@ -13,9 +13,20 @@
     }\
     k++;\
 }
+#define _PUSH(a, ins, reg) {\
+    auto assm = std::make_shared<PseudoAsm>(a,ins,reg);\
+    _PUSH_PSEUDO(assm);\
+}
 #define _WAIT_JUMP(a, b) {\
     waitingJumps[b].emplace_back(a);\
 }
+#define _PUT_DEBUG {\
+    if(debug){\
+        auto assm = std::make_shared<PseudoAsm>(k,PUT,"null");\
+        _PUSH_PSEUDO(assm);\
+    }\
+}
+
 void generate(CodeBlock *block);
 void generateCmd(Command *cmd);
 
