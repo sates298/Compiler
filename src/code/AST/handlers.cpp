@@ -43,6 +43,7 @@ Call *handleArrayByName(std::string name, std::string idx){
     return returned;
 }
 Call *handleArrayByNumber(std::string name, int64 idx){
+    tree.getNumbers().insert(idx);
     Call *returned = new Call();
     returned->line = yylineno;
     returned->name = name;

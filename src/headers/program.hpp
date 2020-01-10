@@ -2,12 +2,19 @@
 #define PROG_HPP
 
 #include "../yacc.hpp"
-#include "global.hpp"
 #include "./transitional/transitional_state.hpp"
+#include "./assembler/assembler.hpp"
 
 void run(){
     yyparse();
     valid();
-    generatePseudoCode();
+    if(!errorAttempts){
+        generatePseudoRegisters();
+        generatePseudoCode();
+    }
+    if(!errorAttempts){
+        generateRealRegisters();
+        generateFromPseudoAsm();
+    }
 }
 #endif

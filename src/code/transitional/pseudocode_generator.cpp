@@ -1,10 +1,30 @@
 #include "../../headers/transitional/pseudocode_generator.hpp"
 
-std::map<std::string, PseudoRegister> registers;
+std::map<std::string, std::shared_ptr<PseudoRegister>> registers;
 pseudoVec code; 
 std::map<uint64, pseudoVec> waitingJumps; 
 
 uint64 k = 0;
+
+void generatePseudoRegisters(){
+    for(auto n:tree.getNumbers()){
+        std::string name = std::to_string(n);
+        auto pseudo = std::make_shared<PseudoRegister>();
+        pseudo->name = name;
+        pseudo->isNumber = true;
+        registers[name] = pseudo;
+    }
+    for(auto& [k,v]:tree.getVariables()){
+        std::string name = v->getName();
+        auto pseudo = std::make_shared<PseudoRegister>();
+        pseudo->name = name;
+        if(v->isArray()){
+            pseudo->isArray = true;
+        }
+        pseudo->var = v.get();
+        registers[name] = pseudo;
+    }   
+}
 
 void generatePseudoCode(){
     for(auto& b: tree.getRoots()){
@@ -13,7 +33,6 @@ void generatePseudoCode(){
     auto halt = std::make_shared<PseudoAsm>(k, HALT, "null");
     _PUSH(halt);
 }
-void generateConstantsRegisters(){}
 
 void generate(CodeBlock *block){
     switch(block->getBlockType()){
@@ -84,9 +103,10 @@ void generateCmd(Command *cmd){
 void generateAssign(Command *cmd){
     generate(cmd->getNested()[0].get());
     auto call = getCallName(*(cmd->getCalls()[0].get()));
-    auto asgn = std::make_shared<PseudoAsm>(k, STORE, call);
-    _PUSH(asgn);
+    
+   generatePseudoAsmByCallType(call, STORE);
 }
+
 void generateIf(Command *cmd){
     generate(cmd->getNested()[0].get());
     auto jump = code[k-1];
@@ -140,31 +160,29 @@ void generateDoWhile(Command *cmd){
     _WAIT_JUMP(jump, k);
 }
 void generateFor(ForLoop *fl){
-    //todo dodać jump do warunku
     auto it = fl->getIterator()->getName();
     auto from = getValueName(fl->getFrom()), to = getValueName(fl->getTo());
 
-    auto loadFrom = std::make_shared<PseudoAsm>(k, LOAD, from);
-    _PUSH(loadFrom);
-    auto storeIt = std::make_shared<PseudoAsm>(k, STORE, it);
-    _PUSH(storeIt);
+    auto pseudo = std::make_shared<PseudoRegister>();
+    pseudo->isIterator = true;
+    pseudo->name = it;
+    registers[it] = pseudo;
+
+    generatePseudoAsmByCallType(from, LOAD);
     auto condJump = std::make_shared<PseudoAsm>(k, JUMP, "null");
     _PUSH(condJump);
     uint64 startK = k;
     for(auto& n:fl->getNested()){
         generate(n.get());
     }
-    auto loadIt = std::make_shared<PseudoAsm>(k, LOAD, it);
-    _PUSH(loadIt);
+    generatePseudoAsmByCallType(it, LOAD);
     auto inc = std::make_shared<PseudoAsm>(k, INC, "null");
     _PUSH(inc);
 
-    condJump->setJumpReference(inc);
+    _WAIT_JUMP(condJump, k);
 
-    auto storeIt1 = std::make_shared<PseudoAsm>(k, STORE, it);
-    _PUSH(storeIt1);
-    auto subTo = std::make_shared<PseudoAsm>(k, SUB, to);
-    _PUSH(subTo);
+    generatePseudoAsmByCallType(it, STORE); //it'll be always normal store - this is iterator
+    generatePseudoAsmByCallType(to, SUB);
     auto dec = std::make_shared<PseudoAsm>(k, DEC, "null");
     _PUSH(dec);
     auto jFor = std::make_shared<PseudoAsm>(k, JNEG, "null");
@@ -173,32 +191,27 @@ void generateFor(ForLoop *fl){
 
 }
 void generateForDown(ForLoop *fl){
-    //todo dodać jump do warunku
     auto it = fl->getIterator()->getName();
     auto from = getValueName(fl->getFrom()), to = getValueName(fl->getTo());
 
-    auto loadFrom = std::make_shared<PseudoAsm>(k, LOAD, from);
-    _PUSH(loadFrom);
-    auto storeIt = std::make_shared<PseudoAsm>(k, STORE, it);
-    _PUSH(storeIt);
+    auto pseudo = std::make_shared<PseudoRegister>();
+    pseudo->isIterator = true;
+    pseudo->name = it;
+    registers[it] = pseudo;
+    generatePseudoAsmByCallType(from, LOAD);
+    generatePseudoAsmByCallType(it, STORE);
     auto condJump = std::make_shared<PseudoAsm>(k, JUMP, "null");
     _PUSH(condJump);
     uint64 startK = k;
     for(auto& n:fl->getNested()){
         generate(n.get());
     }
-
-    auto loadIt = std::make_shared<PseudoAsm>(k, LOAD, it);
-    _PUSH(loadIt);
+    generatePseudoAsmByCallType(it, LOAD);
     auto dec = std::make_shared<PseudoAsm>(k, DEC, "null");
     _PUSH(dec);
-
-    condJump->setJumpReference(dec);
-
-    auto storeIt1 = std::make_shared<PseudoAsm>(k, STORE, it);
-    _PUSH(storeIt1);
-    auto subTo = std::make_shared<PseudoAsm>(k, SUB, to);
-    _PUSH(subTo);
+    _WAIT_JUMP(condJump, k);
+    generatePseudoAsmByCallType(it, STORE); //it'll be always normal store - this is iterator
+    generatePseudoAsmByCallType(to, SUB);
     auto inc = std::make_shared<PseudoAsm>(k, INC, "null");
     _PUSH(inc);
     auto jFor = std::make_shared<PseudoAsm>(k, JPOS, "null");
@@ -209,14 +222,13 @@ void generateRead(Command *cmd){
     auto get = std::make_shared<PseudoAsm>(k, GET, "null");
     _PUSH(get);
     auto call = getCallName(*(cmd->getCalls()[0].get()));
-    auto store = std::make_shared<PseudoAsm>(k, STORE, call);
-    _PUSH(store);
+    
+    generatePseudoAsmByCallType(call, STORE);
 }
 void generateWrite(Command *cmd){
     auto val = cmd->getValue();
     auto call = getValueName(val);
-    auto load = std::make_shared<PseudoAsm>(k, LOAD, call);
-    _PUSH(load);
+    generatePseudoAsmByCallType(call, LOAD);
 
     auto put = std::make_shared<PseudoAsm>(k, PUT, "null");
     _PUSH(put);
@@ -224,10 +236,10 @@ void generateWrite(Command *cmd){
 
 void generateExpr(Expression *exp){
 
-    if(exp->isResultExist()){
+    if(exp->isResultExist() && exp->getExpr() != EPLUS && exp->getExpr() != EMINUS){
         int64 result = exp->getResult();
-        auto loadResult = std::make_shared<PseudoAsm>(k, LOAD, std::to_string(result));
-        _PUSH(loadResult);
+        auto n = std::to_string(result);
+        generatePseudoAsmByCallType(n, LOAD);
         return;
     }
     switch (exp->getExpr())
@@ -257,22 +269,17 @@ void generateExpr(Expression *exp){
 
 void generateNull(Expression *exp){
     auto name = getValueName(exp->getLeft());
-    auto load = std::make_shared<PseudoAsm>(k, LOAD, name);
-    _PUSH(load);
+    generatePseudoAsmByCallType(name, LOAD);
 }
 void generatePlus(Expression *exp){
     auto left = getValueName(exp->getLeft()), right = getValueName(exp->getRight());
-    auto load = std::make_shared<PseudoAsm>(k, LOAD, left);
-    _PUSH(load);
-    auto plus = std::make_shared<PseudoAsm>(k, ADD, right);
-    _PUSH(plus);
+    generatePseudoAsmByCallType(left, LOAD);
+    generatePseudoAsmByCallType(right, ADD);    
 }
 void generateMinus(Expression *exp){
     auto left = getValueName(exp->getLeft()), right = getValueName(exp->getRight());
-    auto load = std::make_shared<PseudoAsm>(k, LOAD, left);
-    _PUSH(load);
-    auto minus = std::make_shared<PseudoAsm>(k, SUB, right);
-    _PUSH(minus);
+    generatePseudoAsmByCallType(left, LOAD);
+    generatePseudoAsmByCallType(right, SUB);    
 }
 void generateTimes(Expression *exp){
     //todo
@@ -292,16 +299,14 @@ void generateCond(Condition *cond){
             _WAIT_JUMP(jResult, k+2);
             _PUSH(jResult);
         }
-        auto jump = std::make_shared<PseudoAsm>(k, JUMP, "null");
+        auto jump = std::make_shared<PseudoAsm>(k, JUMP, "null"); //todo zrobić, żeby pseudoAsm wiedział, że wskazuje na niego jump
         _PUSH(jump);
         return;
     }
     auto left = getValueName(cond->getLeft()), right = getValueName(cond->getRight());
-    auto load = std::make_shared<PseudoAsm>(k, LOAD, left);
-    _PUSH(load);
-    auto minus = std::make_shared<PseudoAsm>(k, SUB, right);
-    _PUSH(minus);
-
+    generatePseudoAsmByCallType(left, LOAD);
+    generatePseudoAsmByCallType(right, SUB);    
+    
     switch (cond->getCond())
     {
     case CEQ:
@@ -359,4 +364,136 @@ void generateLesserEqual(Condition *cond){
 void generateGreaterEqual(Condition *cond){
     auto jfalse = std::make_shared<PseudoAsm>(k, JNEG, "null");
     _PUSH(jfalse);
+}
+
+void generatePseudoAsmByCallType(std::string call, Instruction instr){
+    auto it = call.find(":");
+    bool array;
+    if(it == std::string::npos){
+        array = false;
+    }else{
+        array = true;
+    }
+    switch(instr){
+        case STORE:
+            {array ? generatePseudoStorei(call) : generatePseudoStore(call);}
+            break;
+        case LOAD:
+            {array ? generatePseudoLoadi(call) : generatePseudoLoad(call);}
+            break;
+        case ADD:
+            {array ? generatePseudoAddi(call) : generatePseudoAdd(call);}
+            break;
+        case SUB:
+            {array ? generatePseudoSubi(call) : generatePseudoSub(call);}
+            break;
+        case SHIFT:
+            {array ? generatePseudoShifti(call) : generatePseudoShift(call);}
+            break;
+        default:
+            break;
+    }
+}
+
+void generatePseudoStore(std::string call){
+    auto pseudo = std::make_shared<PseudoAsm>(k, STORE, call);
+    _PUSH(pseudo);
+}
+void generatePseudoLoad(std::string call){
+    auto pseudo = std::make_shared<PseudoAsm>(k, LOAD, call);
+    _PUSH(pseudo)
+}
+void generatePseudoSub(std::string call){
+    auto pseudo = std::make_shared<PseudoAsm>(k, SUB, call);
+    _PUSH(pseudo)
+}
+void generatePseudoAdd(std::string call){
+    auto pseudo = std::make_shared<PseudoAsm>(k, ADD, call);
+    _PUSH(pseudo)
+}
+void generatePseudoShift(std::string call){
+    auto pseudo = std::make_shared<PseudoAsm>(k, SHIFT, call);
+    _PUSH(pseudo)
+}
+
+void generatePseudoStorei(std::string call){
+    auto it = call.find(":");
+    auto arr = call.substr(0,it);
+    auto idx = call.substr(it+1);
+    auto storeTmp = std::make_shared<PseudoAsm>(k, STORE, "TMP");
+    _PUSH(storeTmp)
+    auto loadIdx = std::make_shared<PseudoAsm>(k, LOAD, idx);
+    _PUSH(loadIdx)
+    auto addOff = std::make_shared<PseudoAsm>(k, ADD, arr+"-off");
+    _PUSH(addOff)
+    auto storeTmp2 = std::make_shared<PseudoAsm>(k, STORE, "TMP2");
+    _PUSH(storeTmp2)
+    auto loadTmp = std::make_shared<PseudoAsm>(k, LOAD, "TMP");
+    _PUSH(loadTmp)
+    auto storei = std::make_shared<PseudoAsm>(k, STOREI, "TMP2");
+    _PUSH(storei)  
+}
+void generatePseudoLoadi(std::string call){
+    auto it = call.find(":");
+    auto arr = call.substr(0,it);
+    auto idx = call.substr(it+1);
+    auto loadIdx = std::make_shared<PseudoAsm>(k, LOAD, idx);
+    _PUSH(loadIdx)
+    auto addOff = std::make_shared<PseudoAsm>(k, ADD, arr+"-off");
+    _PUSH(addOff)
+    auto loadi = std::make_shared<PseudoAsm>(k, LOADI, "acc");
+    _PUSH(loadi)   
+}
+void generatePseudoSubi(std::string call){
+    auto it = call.find(":");
+    auto arr = call.substr(0,it);
+    auto idx = call.substr(it+1);
+    auto storeTmp = std::make_shared<PseudoAsm>(k, STORE, "TMP");
+    _PUSH(storeTmp)
+    auto loadIdx = std::make_shared<PseudoAsm>(k, LOAD, idx);
+    _PUSH(loadIdx)
+    auto addOff = std::make_shared<PseudoAsm>(k, ADD, arr+"-off");
+    _PUSH(addOff)
+    auto loadi = std::make_shared<PseudoAsm>(k, LOADI, "acc");
+    _PUSH(loadi)
+    auto storeTmp2 = std::make_shared<PseudoAsm>(k, STORE, "TMP2");
+    _PUSH(storeTmp2)
+    auto loadTmp = std::make_shared<PseudoAsm>(k, LOAD, "TMP");
+    _PUSH(loadTmp)
+    auto subTmp2 = std::make_shared<PseudoAsm>(k, SUB, "TMP2");
+    _PUSH(subTmp2)
+}
+void generatePseudoAddi(std::string call){
+    auto it = call.find(":");
+    auto arr = call.substr(0,it);
+    auto idx = call.substr(it+1);
+    auto storeTmp = std::make_shared<PseudoAsm>(k, STORE, "TMP");
+    _PUSH(storeTmp)
+    auto loadIdx = std::make_shared<PseudoAsm>(k, LOAD, idx);
+    _PUSH(loadIdx)
+    auto addOff = std::make_shared<PseudoAsm>(k, ADD, arr+"-off");
+    _PUSH(addOff)
+    auto loadi = std::make_shared<PseudoAsm>(k, LOADI, "acc");
+    _PUSH(loadi)
+    auto addTmp = std::make_shared<PseudoAsm>(k, ADD, "TMP");
+    _PUSH(addTmp)
+}
+void generatePseudoShifti(std::string call){
+    auto it = call.find(":");
+    auto arr = call.substr(0,it);
+    auto idx = call.substr(it+1);
+    auto storeTmp = std::make_shared<PseudoAsm>(k, STORE, "TMP");
+    _PUSH(storeTmp)
+    auto loadIdx = std::make_shared<PseudoAsm>(k, LOAD, idx);
+    _PUSH(loadIdx)
+    auto addOff = std::make_shared<PseudoAsm>(k, ADD, arr+"-off");
+    _PUSH(addOff)
+    auto loadi = std::make_shared<PseudoAsm>(k, LOADI, "acc");
+    _PUSH(loadi)
+    auto storeTmp2 = std::make_shared<PseudoAsm>(k, STORE, "TMP2");
+    _PUSH(storeTmp2)
+    auto loadTmp = std::make_shared<PseudoAsm>(k, LOAD, "TMP");
+    _PUSH(loadTmp)
+    auto shiftTmp2 = std::make_shared<PseudoAsm>(k, SHIFT, "TMP2");
+    _PUSH(shiftTmp2)
 }

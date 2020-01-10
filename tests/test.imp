@@ -1,13 +1,11 @@
 [test]
 DECLARE
-    a, b, c(-4:22)
+    a, b, c(-11:100), arr(400:401)
 BEGIN
-    a ASSIGN a TIMES i;
-    IF a EQ 2 THEN 
-        READ a;
-    ENDIF
-    FOR i FROM 5 TO 13 DO
-        a ASSIGN a PLUS i;
+    b ASSIGN -10;
+    a ASSIGN -11;
+    c(a) ASSIGN -12;
+    FOR i FROM c(a) TO arr(400) DO
+        WRITE a;
     ENDFOR
-    WRITE a;
 END

@@ -16,11 +16,7 @@
 #define _WAIT_JUMP(a, b) {\
     waitingJumps[b].emplace_back(a);\
 }
-
-void generateConstantsRegisters();
-
 void generate(CodeBlock *block);
-
 void generateCmd(Command *cmd);
 
 void generateAssign(Command *cmd);
@@ -50,5 +46,19 @@ void generateLesser(Condition *cond);
 void generateGreater(Condition *cond);
 void generateLesserEqual(Condition *cond);
 void generateGreaterEqual(Condition *cond);
+
+void generatePseudoAsmByCallType(std::string call, Instruction instr);
+
+void generatePseudoStore(std::string call);
+void generatePseudoLoad(std::string call);
+void generatePseudoSub(std::string call);
+void generatePseudoAdd(std::string call);
+void generatePseudoShift(std::string call);
+
+void generatePseudoStorei(std::string call);
+void generatePseudoLoadi(std::string call);
+void generatePseudoSubi(std::string call);
+void generatePseudoAddi(std::string call);
+void generatePseudoShifti(std::string call);
 
 #endif

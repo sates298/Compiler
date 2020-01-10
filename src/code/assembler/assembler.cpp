@@ -63,3 +63,11 @@ std::string instructionToString(Instruction instr){
         return "null";
     }
 }
+
+std::string Asm::toString(){
+    std::string result = instructionToString(this->instr);
+    if(this->declared){
+        result += " " + std::to_string(this->addr);
+    }
+    return result;
+}

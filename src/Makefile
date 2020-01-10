@@ -9,7 +9,7 @@ FLEX=flex
 
 .PHONY = all clean
 
-all: compiler
+all: compiler clean
 
 flex:
 	$(FLEX) -o lexer.cpp lexer.l

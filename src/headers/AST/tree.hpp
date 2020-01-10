@@ -16,4 +16,7 @@ class Tree{
         std::set<int64> &getNumbers();
         std::vector<std::shared_ptr<CodeBlock>> &getRoots();
 };
+
+extern Tree tree;
+
 #endif

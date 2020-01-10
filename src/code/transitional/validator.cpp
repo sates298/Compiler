@@ -49,7 +49,6 @@ ValidVar validInitializedCall(Call cal, CodeBlock *parent){
 
     if(!arrayCall){
         r.isConstant = found->isConstant();
-        log(std::to_string(r.isConstant) + found->toString())
         r.isInitialized = found->isInitialized();
         return r;
     }
@@ -60,12 +59,9 @@ ValidVar validInitializedCall(Call cal, CodeBlock *parent){
         indexCall.name = cal.secondIdx;
         indexCall.isFirstIndex = false;
         auto isIdx = validInitializedCall(indexCall, parent);
-        log(std::to_string(isIdx.isConstant))
         if(!isIdx.isInitialized){
-            error("Call to array " + cal.name + " by uninitialized variable", cal.line, true);
-        }else if(!isIdx.isConstant){
-            warning("Call to array " + cal.name + " by not constant index", cal.line);
-        }else{
+            warning("Call to array " + cal.name + " by uninitialized variable", cal.line);
+        }else if(isIdx.isConstant){
             auto i = declared[cal.secondIdx]->getValue();
             auto v = (ArrayVariable *)(declared[cal.name].get());
             try{
@@ -87,6 +83,9 @@ ValidVar validInitializedCall(Call cal, CodeBlock *parent){
             }catch(int i){
                 warning("Call to element out of the array", cal.line);
             }
+        }else{
+            r.isConstant = false;
+            r.isInitialized = false;
         }
         r.isIterator = false;
         return r;
@@ -100,9 +99,6 @@ ValidVar validInitializedCall(Call cal, CodeBlock *parent){
         if(el != nullptr){
             r.isConstant = el->isConstant();
             r.isInitialized = true;
-            if(!r.isConstant){
-                warning("Call to array " + cal.name + " by not constant index", cal.line);
-            }
             return r;
         }
     }catch(int i){
@@ -118,7 +114,7 @@ ValidVar validVal(Value *val, CodeBlock *parent){
     if(val->cal != nullptr){
         auto initialized = validInitializedCall(*(val->cal.get()), parent);
         if(!initialized.isInitialized){
-            error("Wanted value is uninitialized",val->cal->line, true);
+            warning("Wanted value could be uninitialized",val->cal->line);
         }
         return initialized;
     }else{
@@ -167,7 +163,7 @@ void validWrite(Command *cmd){
     if(c != nullptr){
         auto r = validInitializedCall(*(c.get()), cmd);
         if(!r.isInitialized){
-            error("Attempting to WRITE uninitialized value",cmd->getLastLine(), false);
+            warning("Attempting to WRITE value that could be uninitialized",cmd->getLastLine());
         }
     }
 }

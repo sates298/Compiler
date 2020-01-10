@@ -43,6 +43,8 @@ class ArrayVariable : public Variable{
         ArrayVariable(std::string name ,int64 a, int64 b);
         void setElement(int64 idx, std::shared_ptr<Variable> element);
         std::shared_ptr<Variable> getElement(int64 idx);
+        int64 getFrom();
+        int64 getTo();
         std::string toString();
 };
 

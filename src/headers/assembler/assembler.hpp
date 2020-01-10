@@ -24,9 +24,16 @@ class Asm{
         ~Asm(){}
         Instruction getInstr();
         uint64 getAddr();
+
+        std::string toString();
 };
 
 typedef std::vector<std::shared_ptr<Asm>> asmVec;
 
+extern uint64 addr;
+extern asmVec finalCode;
+
+void generateRealRegisters();
+void generateFromPseudoAsm();
 
 #endif

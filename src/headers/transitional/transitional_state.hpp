@@ -2,6 +2,7 @@
 #define TRANS_HPP
 
 #include "../assembler/assembler.hpp"
+#include "../AST/tree.hpp"
 #include<map>
 
 class PseudoAsm{
@@ -27,15 +28,24 @@ class PseudoAsm{
 struct PseudoRegister{
     std::string name;
     uint64 index;
+    bool isNumber;
+    bool isOffset;
+    int64 offsetVal;
+    bool isArray;
+    bool isIterator;
+    Variable *var = nullptr;
+
+    std::string toString();
 };
 
 typedef std::vector<std::shared_ptr<PseudoAsm>> pseudoVec;
 
-extern std::map<std::string, PseudoRegister> registers;
+extern std::map<std::string, std::shared_ptr<PseudoRegister>> registers;
 extern pseudoVec code;
 extern std::map<uint64, pseudoVec> waitingJumps;
 
 void generatePseudoCode();
+void generatePseudoRegisters();
 void valid();
 
 

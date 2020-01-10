@@ -40,3 +40,27 @@ std::string PseudoAsm::toString(){
     }
     return result;
 }
+
+std::string PseudoRegister::toString(){
+    std::string result = "{" + this->name;
+
+    if(this->isNumber){
+        result += ", number=true";
+        if(this->isOffset){
+            result += ", offset=true, offset value="+std::to_string(this->offsetVal);
+        }
+    }else if(this->var != nullptr){
+        if(var->isArray()){
+            result += ", var="+((ArrayVariable *)this->var)->toString();
+        }else{
+            result += ", var="+this->var->toString();
+        }
+    }else{
+        if(this->isIterator){
+            result += ", iterator=true";
+        }
+    }
+    result += ", addr=" + std::to_string(this->index);
+    result += "}";
+    return result;
+}

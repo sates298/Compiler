@@ -50,6 +50,14 @@ std::shared_ptr<Variable> ArrayVariable::getElement(int64 idx){
     }
 }
 
+int64 ArrayVariable::getFrom(){
+    return this->firstIdx;
+}
+int64 ArrayVariable::getTo(){
+    return this->lastIdx;
+}
+
+
 std::string Variable::toString(){
     std::string result;
     if(this->type == VAL){
@@ -67,7 +75,7 @@ std::string ArrayVariable::toString(){
 
     result += ", array=[";
     for(const auto& [key, val]:this->elements){
-        result += "idx=" + std::to_string(key) + ", val=" + val->toString() + ", ";
+        // result += "idx=" + std::to_string(key) + ", val=" + val->toString() + ", ";
     }
     result += "]}\n";
     return result;

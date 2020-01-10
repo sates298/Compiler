@@ -1,8 +1,10 @@
 #ifndef HANDLERS_HPP
 #define HANDLERS_HPP
 
-#include "../global.hpp"
+#include "tree.hpp"
 #include "../errors.hpp"
+
+extern int yylineno;
 
 void handleVariableDeclaration(std::string name);
 void handleArrayDeclaration(std::string name, int64 first, int64 last);
