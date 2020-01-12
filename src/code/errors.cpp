@@ -37,9 +37,13 @@ void error(std::string msg, std::string sol,int line_no, bool fatal){
 }
 
 void warning(std::string msg, int line_no){
-    std::cerr << magenta << "[WARNING] " << msg << " in block that ends in line "<< line_no << norm << "\n";
+    if(verbose){
+        std::cerr << magenta << "[WARNING] " << msg << " in block that ends in line "<< line_no << norm << "\n";
+    }
 }
 
 void warning(std::string msg){
-    std::cerr << magenta << "[WARNING] " << msg << norm << "\n";
+    if(verbose){
+        std::cerr << magenta << "[WARNING] " << msg << norm << "\n";
+    }
 }

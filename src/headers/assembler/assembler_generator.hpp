@@ -5,6 +5,11 @@
 #include "../transitional/transitional_state.hpp"
 
 #define _PUSH_ASM(a) { finalCode.emplace_back(a); addr++;}
+
+#define _PUSH_INS(instr, reg) {\
+    auto assm = std::make_shared<Asm>(instr, reg);\
+    _PUSH_ASM(assm)\
+}
 extern uint64 addr;
 extern uint64 regIdx;
 

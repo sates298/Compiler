@@ -8,16 +8,13 @@
 void run(){
     yyparse();
     valid();
-    if(!errorAttempts){
-        generatePseudoRegisters();
-        generatePseudoCode();
-        if(optimization){
-            optimizeCode();
-        }
+    if(errorAttempts) return;
+    generatePseudoRegisters();
+    generatePseudoCode();
+    if(optimization){
+        optimizeCode();
     }
-    if(!errorAttempts){
-        generateRealRegisters();
-        generateFromPseudoAsm();
-    }
+    generateRealRegisters();
+    generateFromPseudoAsm();
 }
 #endif

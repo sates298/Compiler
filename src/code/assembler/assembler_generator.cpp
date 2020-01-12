@@ -36,22 +36,45 @@ void generateNumber(PseudoRegister *pseudo){
         num = std::stoll(pseudo->name);
     }
     _PUSH_ASM(reset);
-    if(num > 0){
-        for(int i=0; i<num; i++){
-            _PUSH_ASM(inc);
+    int64 tmp = num;
+    if(num < 0){
+        tmp = -1*num;
+    }
+    auto shift = std::make_shared<PseudoAsm>(addr, SHIFT, "1");
+    std::vector<char> generator;
+    while(tmp){
+        if(tmp&1){
+            generator.emplace_back('i');
         }
-    }else if(num < 0){
-        for(int i=0; i>num; i--){
-            _PUSH_ASM(dec);
+        tmp >>= 1;
+        if(tmp){  
+            generator.emplace_back('s');
+        }   
+    }
+    for(int i=generator.size()-1; i>=0; i--){
+        if(generator[i] == 's'){
+            generateShift(shift.get());
+        }else{
+            if(num < 0){
+                _PUSH_ASM(dec);
+            }else{
+                _PUSH_ASM(inc);
+            }
         }
     }
+
     auto store = std::make_shared<PseudoAsm>(addr, STORE, pseudo->name);
     generateStore(store.get());
 }
 void generateConstants(){
+    _PUSH_ASM(reset);
+
+    _PUSH_ASM(inc);
+    auto store = std::make_shared<PseudoAsm>(addr, STORE, "1");
+    generateStore(store.get());
     std::vector<std::shared_ptr<PseudoRegister>> numbers;
     for(auto& [k,r]: registers){
-        if(r->isNumber){
+        if(r->isNumber && r->name != "1"){
             if(optimization){
                 numbers.emplace_back(r);
             }else{

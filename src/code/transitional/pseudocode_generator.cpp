@@ -211,26 +211,26 @@ void generateFor(ForLoop *fl){
     pseudo->name = it;
     registers[it] = pseudo;
 
+    auto pseudoEnd = std::make_shared<PseudoRegister>();
+    pseudoEnd->name = it + "END";
+    registers[pseudoEnd->name] = pseudoEnd;
+    generatePseudoAsmByCallType(to, LOAD);
+    _PUSH(STORE, pseudoEnd->name)
+
     generatePseudoAsmByCallType(from, LOAD);
-    auto condJump = std::make_shared<PseudoAsm>(k, JUMP, "null");
-    _PUSH_PSEUDO(condJump);
+    auto condJump = pushJump(JUMP);
     uint64 startK = k;
     for(auto& n:fl->getNested()){
         generate(n.get());
     }
-    generatePseudoAsmByCallType(it, LOAD);
-
-    _PUSH(INC, "null");
-
+    _PUSH(LOAD, it)
+    _PUSH(INC, "null")
     _WAIT_JUMP(condJump, k);
-
-    generatePseudoAsmByCallType(it, STORE); //it'll be always normal store - this is iterator
-    generatePseudoAsmByCallType(to, SUB);
+    _PUSH(STORE, it)
+    _PUSH(SUB, pseudoEnd->name);
     _PUSH(DEC, "null");
-    auto jFor = std::make_shared<PseudoAsm>(k, JNEG, "null");
+    auto jFor = pushJump(JNEG);
     jFor->setJumpReference(code[startK]);
-    _PUSH_PSEUDO(jFor);
-
 }
 void generateForDown(ForLoop *fl){
     auto it = fl->getIterator()->getName();
@@ -240,26 +240,28 @@ void generateForDown(ForLoop *fl){
     pseudo->isIterator = true;
     pseudo->name = it;
     registers[it] = pseudo;
-    generatePseudoAsmByCallType(from, LOAD);
-    generatePseudoAsmByCallType(it, STORE);
-    auto condJump = std::make_shared<PseudoAsm>(k, JUMP, "null");
-    _PUSH_PSEUDO(condJump);
+    auto pseudoEnd = std::make_shared<PseudoRegister>();
+    pseudoEnd->name = it + "END";
+    registers[pseudoEnd->name] = pseudoEnd;
+    generatePseudoAsmByCallType(to, LOAD);
+    _PUSH(STORE, pseudoEnd->name)
 
+    generatePseudoAsmByCallType(from, LOAD);
+    auto condJump = pushJump(JUMP);
     uint64 startK = k;
     for(auto& n:fl->getNested()){
         generate(n.get());
     }
-    generatePseudoAsmByCallType(it, LOAD);
+    _PUSH(LOAD,it)
 
     _PUSH(DEC, "null");
-    _WAIT_JUMP(condJump, k);
-    generatePseudoAsmByCallType(it, STORE); //it'll be always normal store - this is iterator
-    generatePseudoAsmByCallType(to, SUB);
+    _WAIT_JUMP(condJump, k)
+    _PUSH(STORE,it)
+    _PUSH(SUB, pseudoEnd->name)
     _PUSH(INC, "null");
 
-    auto jFor = std::make_shared<PseudoAsm>(k, JPOS, "null");
+    auto jFor = pushJump(JPOS);
     jFor->setJumpReference(code[startK]);
-    _PUSH_PSEUDO(jFor);
 }
 void generateRead(Command *cmd){
     _PUSH(GET, "null");
@@ -332,23 +334,19 @@ void generateTimes(Expression *exp){
     generatePseudoAsmByCallType(right, LOAD);
     _PUSH(STORE, "TMPright")
     _PUSH(STORE, "TMP3exp")
-    auto jSign = std::make_shared<PseudoAsm>(k,JNEG,"null");
-    _WAIT_JUMP(jSign, k+2)
-    _PUSH_PSEUDO(jSign)
-    auto jFalse = std::make_shared<PseudoAsm>(k,JUMP,"null");
-    _WAIT_JUMP(jFalse, k+3)
-    _PUSH_PSEUDO(jFalse)
+    auto jSign = pushJump(JNEG);
+    _WAIT_JUMP(jSign, k+1)
+    auto jFalse = pushJump(JUMP);
+    _WAIT_JUMP(jFalse, k+2)
     _PUSH(SUB, "TMP3exp")
     _PUSH(SUB, "TMP3exp")
     uint64 startk = k;
     _PUSH(STORE, "TMP3exp")
-    auto jWhile = std::make_shared<PseudoAsm>(k,JZERO,"null");
-    _PUSH_PSEUDO(jWhile)
+    auto jWhile = pushJump(JZERO);
     _PUSH(SHIFT, "-1")
     _PUSH(SHIFT, "1")
     _PUSH(SUB, "TMP3exp")
-    auto jMod = std::make_shared<PseudoAsm>(k,JZERO,"null");
-    _PUSH_PSEUDO(jMod)
+    auto jMod = pushJump(JZERO);
     _PUSH(LOAD, "TMPleft")
     _PUSH(SHIFT, "TMP2exp")
     _PUSH(ADD, "TMP1exp")
@@ -359,18 +357,15 @@ void generateTimes(Expression *exp){
     _PUSH(STORE, "TMP2exp")
     _PUSH(LOAD, "TMP3exp")
     _PUSH(SHIFT, "-1")
-    auto jump = std::make_shared<PseudoAsm>(k,JUMP,"null");
+    auto jump = pushJump(JUMP);
     jump->setJumpReference(code[startk]);
-    _PUSH_PSEUDO(jump)
     _WAIT_JUMP(jWhile, k);
     _PUSH(LOAD, "TMPright")
-    auto jResult = std::make_shared<PseudoAsm>(k,JNEG,"null");
-    _WAIT_JUMP(jResult, k+3)
-    _PUSH_PSEUDO(jResult)
+    auto jResult = pushJump(JNEG);
+    _WAIT_JUMP(jResult, k+2)
     _PUSH(LOAD, "TMP1exp")
-    auto jEnd = std::make_shared<PseudoAsm>(k,JUMP,"null");
-    _WAIT_JUMP(jEnd, k+4)
-    _PUSH_PSEUDO(jEnd)
+    auto jEnd = pushJump(JUMP);
+    _WAIT_JUMP(jEnd, k+3)
     _PUSH(LOAD, "TMP1exp")
     _PUSH(SUB, "TMP1exp")
     _PUSH(SUB, "TMP1exp")

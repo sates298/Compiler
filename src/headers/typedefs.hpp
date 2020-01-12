@@ -9,4 +9,6 @@ typedef long long int64;
 typedef unsigned long long uint64;
 
 extern bool optimization;
+extern bool verbose;
+extern bool debug;
 #endif

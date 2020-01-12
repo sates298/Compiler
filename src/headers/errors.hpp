@@ -19,4 +19,6 @@ void error(std::string msg, std::string sol, bool fatal);
 
 void warning(std::string msg, int line_no);
 void warning(std::string msg);
+
+extern bool verbose;
 #endif

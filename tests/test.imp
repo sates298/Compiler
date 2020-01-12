@@ -1,19 +1,16 @@
-[test]
 DECLARE
-    a, b(-1:2), c(15:16)
+    j, k
 BEGIN
-    c(15) ASSIGN -4;
-    a ASSIGN 8 PLUS 7;
-    b(1) ASSIGN -15 TIMES c(a);
-    a ASSIGN 1;
-    WRITE a;
-    WRITE b(a);
-    [a ASSIGN -2;
-    c(a) ASSIGN b;
-    arr(1) ASSIGN 10;
-    FOR i FROM c(a) TO arr(1) DO
-        b ASSIGN i PLUS a;
-        WRITE b;
-        a ASSIGN 2 PLUS c(a);
-    ENDFOR]
+    READ k;
+    FOR i FROM 0 TO k DO
+        IF i EQ 1 THEN
+            j ASSIGN 1;
+        ENDIF
+        IF i GE 1 THEN
+            j ASSIGN j PLUS j;
+        ENDIF
+    ENDFOR
+    IF k GEQ 1 THEN
+        WRITE j;
+    ENDIF
 END

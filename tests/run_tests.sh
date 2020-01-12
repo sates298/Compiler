@@ -1,20 +1,22 @@
 #!/bin/bash
 
 echo "error 0";
-../src/compiler < ../tests/error0.imp
+./compiler -v error0.imp error.mr
 echo "error 1";
-../src/compiler < ../tests/error1.imp
+./compiler -v error1.imp error.mr
 echo "error 2";
-../src/compiler < ../tests/error2.imp
+./compiler -v error2.imp error.mr
 echo "error 3";
-../src/compiler < ../tests/error3.imp
+./compiler -v error3.imp error.mr
 echo "error 4";
-../src/compiler < ../tests/error4.imp
+./compiler -v error4.imp error.mr
 echo "error 5";
-../src/compiler < ../tests/error5.imp
+./compiler -v error5.imp error.mr
 echo "error 6";
-../src/compiler < ../tests/error6.imp
+./compiler -v error6.imp error.mr
 echo "error 7";
-../src/compiler < ../tests/error7.imp
+./compiler -v error7.imp error.mr
 echo "error 8";
-../src/compiler < ../tests/error8.imp
+./compiler -v error8.imp error.mr
+
+rm error.mr

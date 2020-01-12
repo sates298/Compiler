@@ -3,6 +3,7 @@
 
 bool optimization = false;
 bool verbose = false;
+bool debug = false;
 
 int main(int argc, const char* argv[]){
 
@@ -17,18 +18,21 @@ int main(int argc, const char* argv[]){
                 error("Can't open input file", true);
             }
         }else if(curr.find(".mr") != std::string::npos){
-            if(access(curr.c_str(), W_OK) != -1){
+            // if(access(curr.c_str(), W_OK) != -1 || access(curr.c_str(), F_OK) != -1){
                 freopen(curr.c_str(),"w",stdout);
                 out = curr;
-            }else{
-                error("Can't open input file", true);
-            }
+            // }else{
+            //     error("Can't open output file", true);
+            // }
         }else if(curr.find("-") == 0){
             if(curr.find("o") != std::string::npos){
                 optimization = true;
             }
             if(curr.find("v") != std::string::npos){
                 verbose = true;
+            }
+            if(curr.find("d") != std::string::npos){
+                debug = true;
             }
         }else{
             error("Unrecognized command line option " + curr, true);
@@ -50,17 +54,20 @@ int main(int argc, const char* argv[]){
     }
     fclose(stdout);
 
-    // for(const auto& c:tree.getNumbers()){
-    //     log(std::to_string(c));
-    // }
-    // for(const auto& [k, v]:tree.getVariables()){
-    //     log(v->toString());
-    // }
-    // for(const auto& r:tree.getRoots()){
-    //     log(r->toString());
-    //     std::clog << "root " << r << r->toString() << "\n";
-    // }
-    if(verbose){
+    
+    if(debug){
+        log("constants");
+        for(const auto& c:tree.getNumbers()){
+            log(std::to_string(c));
+        }
+        log("variables");
+        for(const auto& [k, v]:tree.getVariables()){
+            log(v->toString());
+        }
+        log("tree");
+        for(const auto& r:tree.getRoots()){
+            log(r->toString());
+        }
         log("pseudo assembler");
         for(const auto& c: code){
             log(c->toString());
