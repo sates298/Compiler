@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 bool optimization = false;
-bool debug = false;
+bool verbose = false;
 
 int main(int argc, const char* argv[]){
 
@@ -27,8 +27,8 @@ int main(int argc, const char* argv[]){
             if(curr.find("o") != std::string::npos){
                 optimization = true;
             }
-            if(curr.find("d") != std::string::npos){
-                debug = true;
+            if(curr.find("v") != std::string::npos){
+                verbose = true;
             }
         }else{
             error("Unrecognized command line option " + curr, true);
@@ -60,17 +60,19 @@ int main(int argc, const char* argv[]){
     //     log(r->toString());
     //     std::clog << "root " << r << r->toString() << "\n";
     // }
-    log("pseudo assembler");
-    for(const auto& c: code){
-        log(c->toString());
+    if(verbose){
+        log("pseudo assembler");
+        for(const auto& c: code){
+            log(c->toString());
+        }
+        log("registers");
+        for(const auto& [k, r]: registers){
+            log(r->toString());
+        }
+        // log("real assembler")
+        // for(const auto& a: finalCode){
+        //     log(a->toString());
+        // }
     }
-    log("registers");
-    for(const auto& [k, r]: registers){
-        log(r->toString()); //todo jakis seg fault
-    }
-    log("real assembler")
-    // for(const auto& a: finalCode){
-    //     log(a->toString());
-    // }
     return 0;
 }

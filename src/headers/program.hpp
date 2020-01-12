@@ -12,7 +12,7 @@ void run(){
         generatePseudoRegisters();
         generatePseudoCode();
         if(optimization){
-            //optimizeAsm();
+            optimizeCode();
         }
     }
     if(!errorAttempts){

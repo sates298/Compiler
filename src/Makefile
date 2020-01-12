@@ -32,6 +32,7 @@ trans:
 	$(CXX) -o validator.o -c code/transitional/validator.cpp
 	$(CXX) -o transitional.o -c code/transitional/transitional_state.cpp
 	$(CXX) -o pseudocode.o -c code/transitional/pseudocode_generator.cpp
+	$(CXX) -o optimize.o -c code/transitional/pseudo_optimization.cpp
 
 assembler:
 	$(CXX) -o asm_generator.o -c code/assembler/assembler_generator.cpp
@@ -43,14 +44,10 @@ main: trans assembler
 
 compiler: parser main
 	$(CXX) -o compiler lexer.o yacc.o handlers.o assembler.o asm_generator.o variables.o \
-		 blocks.o tree.o validator.o transitional.o support.o pseudocode.o errors.o main.o 
+		 blocks.o tree.o validator.o transitional.o support.o pseudocode.o optimize.o errors.o main.o 
 
-test_compile:
-	./compiler -d ../tests/test.imp ../tests/test.mr
-
-test_compile_and_run:
+test:
 	./compiler ../tests/test.imp ../tests/test.mr
-	../maszyna_wirtualna/maszyna_wirtualna ../tests/test.mr
 
 clean:
 	$(RM) *.o
