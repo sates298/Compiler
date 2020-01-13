@@ -3,3 +3,4 @@ maszyna_wirtualna/
 .vscode
 */compiler
 runtests
+test-files/jftt2019-tests/*.mr

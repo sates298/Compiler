@@ -166,8 +166,7 @@ void generateIfElse(Command *cmd){
     for(int64 i=1; i<cmd->getFirstElseIndex(); i++){
         generate(cmd->getNested()[i].get());
     }
-    auto jElse = std::make_shared<PseudoAsm>(k, JUMP, "null");
-    _PUSH_PSEUDO(jElse);
+    auto jElse = pushJump(JUMP);
     _WAIT_JUMP(jump, k);
     for(unsigned long i=cmd->getFirstElseIndex(); i<cmd->getNested().size(); i++){
         generate(cmd->getNested()[i].get());
@@ -182,14 +181,12 @@ void generateWhile(Command *cmd){
     for(unsigned long i=1; i<cmd->getNested().size(); i++){
         generate(cmd->getNested()[i].get());
     }
-    auto jWhile = std::make_shared<PseudoAsm>(k, JUMP, "null");
+    auto jWhile = pushJump(JUMP);
     jWhile->setJumpReference(code[startK]);
-    _PUSH_PSEUDO(jWhile);
     _WAIT_JUMP(jump, k);
 }
 void generateDoWhile(Command *cmd){
-    auto jDoWhile = std::make_shared<PseudoAsm>(k, JUMP, "null");
-    _PUSH_PSEUDO(jDoWhile);
+    auto jDoWhile = pushJump(JUMP);
     uint64 startK = k;
     generate(cmd->getNested()[0].get());
     auto jump = code[k-1];
@@ -197,9 +194,8 @@ void generateDoWhile(Command *cmd){
     for(unsigned long i=1; i<cmd->getNested().size(); i++){
         generate(cmd->getNested()[i].get());
     }
-    auto jWhile = std::make_shared<PseudoAsm>(k, JUMP, "null");
+    auto jWhile = pushJump(JUMP);
     jWhile->setJumpReference(code[startK]);
-    _PUSH_PSEUDO(jWhile);
     _WAIT_JUMP(jump, k);
 }
 void generateFor(ForLoop *fl){
@@ -375,36 +371,30 @@ void generateDiv(Expression *exp){
     _PUSH(SUB, "ACC")
     _PUSH(STORE, "TMP1exp")
     generatePseudoAsmByCallType(right, LOAD);
-    auto jBzero = std::make_shared<PseudoAsm>(k,JZERO,"null"); //jump end
-    _PUSH_PSEUDO(jBzero)
+    auto jBzero = pushJump(JZERO); //jump end
     _PUSH(STORE, "TMPright")
     _PUSH(STORE, "TMP2exp")
-    auto jneg = std::make_shared<PseudoAsm>(k,JNEG,"null");
-    _WAIT_JUMP(jneg, k+2)
-    _PUSH_PSEUDO(jneg)
-    auto jumpStart = std::make_shared<PseudoAsm>(k,JUMP,"null");
-    _WAIT_JUMP(jumpStart, k+4)
-    _PUSH_PSEUDO(jumpStart)
+    auto jneg = pushJump(JNEG);
+    _WAIT_JUMP(jneg, k+1)
+    auto jumpStart = pushJump(JUMP);
+    _WAIT_JUMP(jumpStart, k+3)
     _PUSH(SUB, "TMP2exp")
     _PUSH(SUB, "TMP2exp")
     _PUSH(STORE, "TMP2exp")
     generatePseudoAsmByCallType(left, LOAD);
     _PUSH(STORE, "TMPleft") 
     _PUSH(STORE, "TMP3exp")
-    auto jneg1 = std::make_shared<PseudoAsm>(k,JNEG,"null");
-    _WAIT_JUMP(jneg1, k+2)
-    _PUSH_PSEUDO(jneg1)
-    auto jump = std::make_shared<PseudoAsm>(k,JUMP,"null");
-    _WAIT_JUMP(jump, k+4)
-    _PUSH_PSEUDO(jump)
+    auto jneg1 = pushJump(JNEG);
+    _WAIT_JUMP(jneg1, k+1)
+    auto jump = pushJump(JUMP);
+    _WAIT_JUMP(jump, k+3)
     _PUSH(SUB, "TMP3exp")
     _PUSH(SUB, "TMP3exp")
     uint64 startWhile = k;
     _PUSH(STORE, "TMP3exp")
     _PUSH(SUB, "TMP2exp")
-    auto jEndWhile = std::make_shared<PseudoAsm>(k,JNEG,"null"); //jump end bigger while
-    //_WAIT_JUMP(jEndWhile, k+25)
-    _PUSH_PSEUDO(jEndWhile)
+    auto jEndWhile = pushJump(JNEG); //jump end bigger while
+    //_WAIT_JUMP(jEndWhile, k+24)
     _PUSH(LOAD, "TMP2exp")
     _PUSH(STORE, "TMP4exp")
     _PUSH(SUB, "ACC")
@@ -413,19 +403,17 @@ void generateDiv(Expression *exp){
     _PUSH(STORE, "TMP6exp")
     _PUSH(LOAD, "TMP4exp")
     _PUSH(SUB, "TMP3exp")
-    auto jEndInt = std::make_shared<PseudoAsm>(k,JPOS,"null"); //jump end interior while
-    //_WAIT_JUMP(jEndInt, k+7)
-    _PUSH_PSEUDO(jEndInt)
+    auto jEndInt = pushJump(JPOS); //jump end interior while
+    //_WAIT_JUMP(jEndInt, k+6)
     _PUSH(LOAD, "TMP4exp")
     _PUSH(SHIFT, "1")
     _PUSH(STORE, "TMP4exp")
     _PUSH(LOAD, "TMP6exp")
     _PUSH(SHIFT, "1")
-    auto jump1 = std::make_shared<PseudoAsm>(k,JUMP,"null");
+    auto jump1 = pushJump(JUMP);
     jump1 -> setJumpReference(code[startInteriorWhile]);
-    _PUSH_PSEUDO(jump1) //last instruction of interior while
     _WAIT_JUMP(jEndInt, k)
-    _PUSH(LOAD, "TMP6exp")
+    _PUSH(LOAD, "TMP6exp") //end interior while
     _PUSH(SHIFT, "-1")
     _PUSH(ADD, "TMP1exp")
     _PUSH(STORE, "TMP1exp")
@@ -434,41 +422,31 @@ void generateDiv(Expression *exp){
     _PUSH(STORE, "TMP5exp")
     _PUSH(LOAD, "TMP3exp")
     _PUSH(SUB, "TMP5exp")
-    auto jump2 = std::make_shared<PseudoAsm>(k,JUMP,"null");
+    auto jump2 = pushJump(JUMP);
     jump2 -> setJumpReference(code[startWhile]);
-    _PUSH_PSEUDO(jump2) //last instruction of bigger while
     _WAIT_JUMP(jEndWhile, k)
-    _PUSH(LOAD, "TMPright")
-    auto jneg2 = std::make_shared<PseudoAsm>(k,JNEG,"null"); //jump to next sign check
-    _PUSH_PSEUDO(jneg2)
+    _PUSH(LOAD, "TMPright") //end bigger while
+    auto jneg2 = pushJump(JNEG); //jump to next sign check
     _PUSH(LOAD, "TMPleft")
-    auto jneg3 = std::make_shared<PseudoAsm>(k,JNEG,"null");
-    _WAIT_JUMP(jneg3, k+3) 
-    _PUSH_PSEUDO(jneg3)
+    auto jneg3 = pushJump(JNEG);
+    _WAIT_JUMP(jneg3, k+2) 
     uint64 startFirstCheck = k;
     _PUSH(LOAD, "TMP1exp")
-    auto jumpEnd = std::make_shared<PseudoAsm>(k,JUMP,"null"); //jump end
-    _PUSH_PSEUDO(jumpEnd)
+    auto jumpEnd = pushJump(JUMP); //jump end
     uint64 startSecondCheck = k;
     _PUSH(LOAD, "TMP1exp")
     _PUSH(SUB, "TMP1exp")
     _PUSH(SUB, "TMP1exp")
     _PUSH(STORE, "TMP1exp")
-    auto jumpCheck = std::make_shared<PseudoAsm>(k,JUMP,"null"); //jump to end sign check
-    _PUSH_PSEUDO(jumpCheck)
-    _WAIT_JUMP(jneg2, k)    //next sign check
-    _PUSH(LOAD, "TMPleft")
-    auto jneg4 = std::make_shared<PseudoAsm>(k,JNEG,"null");
+    auto jumpCheck = pushJump(JUMP); //jump to end sign check
+    _WAIT_JUMP(jneg2, k)    
+    _PUSH(LOAD, "TMPleft")  //next sign check
+    auto jneg4 = pushJump(JNEG);
     jneg4 ->setJumpReference(code[startFirstCheck]);
-    _PUSH_PSEUDO(jneg4)
-    auto jump3 = std::make_shared<PseudoAsm>(k,JUMP,"null");
+    auto jump3 = pushJump(JUMP);
     jump3->setJumpReference(code[startSecondCheck]);
-    _PUSH_PSEUDO(jump3) //last instruction in sign check
-
     _WAIT_JUMP(jumpCheck, k);
-    //check if is needed -1 to result
-    _PUSH(LOAD, "TMP3exp")
-    
+    _PUSH(LOAD, "TMP3exp")  //end sign check
     auto jzero = pushJump(JZERO);
     _PUSH(LOAD, "TMP1exp")
     _PUSH(SUB, "1")
@@ -479,9 +457,7 @@ void generateDiv(Expression *exp){
     _WAIT_JUMP(jumpResult, k)
     _WAIT_JUMP(jBzero, k)
     _WAIT_JUMP(jumpEnd, k)
-    
     //end
-    
 }
 void generateMod(Expression *exp){
     auto left = getValueName(exp->getLeft()), right = getValueName(exp->getRight());
@@ -562,7 +538,7 @@ void generateCond(Condition *cond){
         if(result){
             auto jResult = pushJump(JUMP);
             _WAIT_JUMP(jResult, k+1);
-        } //todo zrobić, żeby pseudoAsm wiedział, że wskazuje na niego jump
+        }
         _PUSH(JUMP, "null");
         return;
     }
@@ -596,24 +572,21 @@ void generateCond(Condition *cond){
 }
 
 void generateEqual(Condition *cond){
-    auto jtrue = std::make_shared<PseudoAsm>(k, JZERO, "null");
-    _WAIT_JUMP(jtrue, k+2);
-    _PUSH_PSEUDO(jtrue);
+    auto jtrue = pushJump(JZERO);
+    _WAIT_JUMP(jtrue, k+1);
     _PUSH(JUMP, "null");
 }
 void generateNotEqual(Condition *cond){
     _PUSH(JZERO, "null");
 }
 void generateLesser(Condition *cond){
-    auto jtrue = std::make_shared<PseudoAsm>(k, JNEG, "null");
-    _WAIT_JUMP(jtrue, k+2);
-    _PUSH_PSEUDO(jtrue);
+    auto jtrue = pushJump(JNEG);
+    _WAIT_JUMP(jtrue, k+1);
     _PUSH(JUMP, "null");
 }
 void generateGreater(Condition *cond){
-    auto jtrue = std::make_shared<PseudoAsm>(k, JPOS, "null");
-    _WAIT_JUMP(jtrue, k+2);
-    _PUSH_PSEUDO(jtrue);
+    auto jtrue = pushJump(JPOS);
+    _WAIT_JUMP(jtrue, k+1);
     _PUSH(JUMP, "null");
 }
 void generateLesserEqual(Condition *cond){

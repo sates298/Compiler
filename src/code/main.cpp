@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 bool optimization = false;
-bool verbose = false;
+bool verbose = true;
 bool debug = false;
 
 int main(int argc, const char* argv[]){
@@ -18,18 +18,14 @@ int main(int argc, const char* argv[]){
                 error("Can't open input file", true);
             }
         }else if(curr.find(".mr") != std::string::npos){
-            // if(access(curr.c_str(), W_OK) != -1 || access(curr.c_str(), F_OK) != -1){
-                freopen(curr.c_str(),"w",stdout);
-                out = curr;
-            // }else{
-            //     error("Can't open output file", true);
-            // }
+            freopen(curr.c_str(),"w",stdout);
+            out = curr;
         }else if(curr.find("-") == 0){
             if(curr.find("o") != std::string::npos){
                 optimization = true;
             }
-            if(curr.find("v") != std::string::npos){
-                verbose = true;
+            if(curr.find("s") != std::string::npos){
+                verbose = false;
             }
             if(curr.find("d") != std::string::npos){
                 debug = true;

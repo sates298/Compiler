@@ -15,6 +15,7 @@ void PseudoAsm::shiftIndex(uint64 s){
 }
 void PseudoAsm::setJumpReference(std::shared_ptr<PseudoAsm> reference){
     this->jumpReference = reference;
+    reference->setJumped(true);
 }
 
 std::shared_ptr<PseudoAsm> PseudoAsm::getJumpReference(){
@@ -25,6 +26,14 @@ Instruction PseudoAsm::getInstr(){
 }
 std::string PseudoAsm::getArgument(){
     return this->argument;
+}
+
+void PseudoAsm::setJumped(bool b){
+    this->jumped = b;
+}
+
+bool PseudoAsm::isJumped(){
+    return this->jumped;
 }
 
 std::string PseudoAsm::toString(){

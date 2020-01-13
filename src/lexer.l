@@ -14,7 +14,7 @@
 
 [_a-z]+         {yylval.str = new std::string(yytext); return PIDENTIFIER;}
 -?[[:digit:]]+    {yylval.num = std::stoll(yytext); return NUM;}
-[ \t]+    /*ignore*/;
+[ \t\r]+    /*ignore*/;
 
 
 DECLARE {return PDECLARE;} 

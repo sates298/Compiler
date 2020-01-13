@@ -11,6 +11,7 @@ class PseudoAsm{
         Instruction instr;
         std::string argument;
         std::shared_ptr<PseudoAsm> jumpReference;
+        bool jumped;
     public:
     PseudoAsm(uint64 k, Instruction i, std::string argument);
     virtual ~PseudoAsm() = default;
@@ -21,6 +22,8 @@ class PseudoAsm{
     std::shared_ptr<PseudoAsm> getJumpReference();
     Instruction getInstr();
     std::string getArgument();
+    void setJumped(bool b);
+    bool isJumped();
 
     std::string toString();
 };

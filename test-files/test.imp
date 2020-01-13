@@ -1,0 +1,6 @@
+DECLARE
+    j
+BEGIN
+    j ASSIGN 1000 TIMES -10;
+    WRITE j;
+END
