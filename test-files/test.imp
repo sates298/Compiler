@@ -1,16 +1,6 @@
 DECLARE
-    j, k
+    j
 BEGIN
-    READ k;
-    FOR i FROM 0 TO k DO
-        IF i EQ 1 THEN
-            j ASSIGN 1;
-        ENDIF
-        IF i GE 1 THEN
-            j ASSIGN j PLUS j;
-        ENDIF
-    ENDFOR
-    IF k GEQ 1 THEN
-        WRITE j;
-    ENDIF
+    j ASSIGN 1000 TIMES -10;
+    WRITE j;
 END

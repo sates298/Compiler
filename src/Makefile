@@ -47,7 +47,7 @@ compiler: parser main
 		 blocks.o tree.o validator.o transitional.o support.o pseudocode.o optimize.o errors.o main.o 
 
 test:
-	./compiler -v ../tests/test.imp ../tests/test.mr
+	./compiler ../test-files/test.imp ../test-files/test.mr
 
 clean:
 	$(RM) *.o
