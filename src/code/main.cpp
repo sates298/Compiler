@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 bool optimization = false;
-bool verbose = false;
+bool verbose = true;
 bool debug = false;
 
 int main(int argc, const char* argv[]){
@@ -28,8 +28,8 @@ int main(int argc, const char* argv[]){
             if(curr.find("o") != std::string::npos){
                 optimization = true;
             }
-            if(curr.find("v") != std::string::npos){
-                verbose = true;
+            if(curr.find("s") != std::string::npos){
+                verbose = false;
             }
             if(curr.find("d") != std::string::npos){
                 debug = true;
