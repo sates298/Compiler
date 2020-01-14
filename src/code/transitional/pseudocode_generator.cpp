@@ -1,8 +1,8 @@
 #include "../../headers/transitional/pseudocode_generator.hpp"
 
 std::map<std::string, std::shared_ptr<PseudoRegister>> registers;
-pseudoVec code; 
-std::map<uint64, pseudoVec> waitingJumps; 
+pseudoQue code; 
+std::map<uint64, pseudoQue> waitingJumps; 
 
 uint64 k = 0;
 
@@ -397,8 +397,7 @@ void generateDiv(Expression *exp){
     //_WAIT_JUMP(jEndWhile, k+24)
     _PUSH(LOAD, "TMP2exp")
     _PUSH(STORE, "TMP4exp")
-    _PUSH(SUB, "ACC")
-    _PUSH(INC, "null")
+    _PUSH(LOAD, "1")
     uint64 startInteriorWhile = k;
     _PUSH(STORE, "TMP6exp")
     _PUSH(LOAD, "TMP4exp")

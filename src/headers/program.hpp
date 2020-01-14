@@ -11,9 +11,9 @@ void run(){
     if(errorAttempts) return;
     generatePseudoRegisters();
     generatePseudoCode();
-    if(optimization){
+    // if(optimization){
         optimizeCode();
-    }
+    // }
     generateRealRegisters();
     generateFromPseudoAsm();
 }

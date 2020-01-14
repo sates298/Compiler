@@ -62,37 +62,32 @@ void generateNumber(PseudoRegister *pseudo){
             }
         }
     }
-
-    auto store = std::make_shared<PseudoAsm>(addr, STORE, pseudo->name);
-    generateStore(store.get());
+    auto reg = registers[pseudo->name];
+    _PUSH_INS(STORE, reg->index)
 }
 void generateConstants(){
-    _PUSH_ASM(reset);
-
-    _PUSH_ASM(inc);
-    auto store = std::make_shared<PseudoAsm>(addr, STORE, "1");
-    generateStore(store.get());
-    std::vector<std::shared_ptr<PseudoRegister>> numbers;
-    for(auto& [k,r]: registers){
-        if(r->isNumber && r->name != "1"){
-            if(optimization){
-                numbers.emplace_back(r);
-            }else{
+    // if(optimization){
+    //     _PUSH_ASM(reset);
+    //     smartGeneratingConstants();
+    // }else{
+        _PUSH_ASM(reset);
+        _PUSH_ASM(inc);
+        _PUSH_PSEUDO_INS(STORE, "1")
+        _PUSH_ASM(dec);
+        _PUSH_ASM(dec);
+        _PUSH_PSEUDO_INS(STORE, "-1")
+        _PUSH_ASM(inc);
+        for(auto& [k,r]: registers){
+            if(r->isNumber && (r->name != "1" && r->name != "-1" )){
                 generateNumber(r.get());
             }
         }
-    }
-    if(optimization){
-        //todo sortowanie numbers
-        for(auto n: numbers){
-            //todo mądre generowanie numerów
-        }
-    }
+    // }
 }
 
 void generateFromPseudoAsm(){
     generateConstants();
-    PseudoAsm::shiftCode(addr,code);
+    PseudoAsm::shiftCode(0,addr,code);
     for(auto& ins: code){
         generateAsm(ins.get());
     }
@@ -155,54 +150,43 @@ void generateAsm(PseudoAsm *p){
 
 void generateStore(PseudoAsm *p){
     auto reg = registers[p->getArgument()];
-    auto assm = std::make_shared<Asm>(STORE, reg->index);
-    _PUSH_ASM(assm);
+    _PUSH_INS(STORE, reg->index)
 }
 void generateLoad(PseudoAsm *p){
     auto reg = registers[p->getArgument()];
-    auto assm = std::make_shared<Asm>(LOAD, reg->index);
-    _PUSH_ASM(assm);
+    _PUSH_INS(LOAD, reg->index)
 }
 
 void generateStorei(PseudoAsm *p){
     auto reg = registers[p->getArgument()];
-    auto assm = std::make_shared<Asm>(STOREI, reg->index);
-    _PUSH_ASM(assm);
+    _PUSH_INS(STOREI, reg->index)
 }
 void generateLoadi(PseudoAsm *p){
     auto reg = registers[p->getArgument()];
-    auto assm = std::make_shared<Asm>(LOADI, reg->index);
-    _PUSH_ASM(assm);
+    _PUSH_INS(LOADI, reg->index)
 }
 
 void generateJump(PseudoAsm *p){
-    auto assm = std::make_shared<Asm>(JUMP,p->getJumpReference()->getIndex());
-    _PUSH_ASM(assm);
+    _PUSH_INS(JUMP, p->getJumpReference()->getIndex())
 }
 void generateJzero(PseudoAsm *p){
-    auto assm = std::make_shared<Asm>(JZERO, p->getJumpReference()->getIndex());
-    _PUSH_ASM(assm);
+    _PUSH_INS(JZERO, p->getJumpReference()->getIndex())
 }
 void generateJpos(PseudoAsm *p){
-    auto assm = std::make_shared<Asm>(JPOS, p->getJumpReference()->getIndex());
-    _PUSH_ASM(assm);
+    _PUSH_INS(JPOS, p->getJumpReference()->getIndex())
 }
 void generateJneg(PseudoAsm *p){
-    auto assm = std::make_shared<Asm>(JNEG, p->getJumpReference()->getIndex());
-    _PUSH_ASM(assm);
+    _PUSH_INS(JNEG, p->getJumpReference()->getIndex())
 }
 void generateShift(PseudoAsm *p){
     auto reg = registers[p->getArgument()];
-    auto assm = std::make_shared<Asm>(SHIFT, reg->index);
-    _PUSH_ASM(assm);
+    _PUSH_INS(SHIFT, reg->index)
 }
 void generateAdd(PseudoAsm *p){
     auto reg = registers[p->getArgument()];
-    auto assm = std::make_shared<Asm>(ADD, reg->index);
-    _PUSH_ASM(assm);
+    _PUSH_INS(ADD, reg->index)
 }
 void generateSub(PseudoAsm *p){
     auto reg = registers[p->getArgument()];
-    auto assm = std::make_shared<Asm>(SUB, reg->index);
-    _PUSH_ASM(assm);
+    _PUSH_INS(SUB, reg->index)
 }

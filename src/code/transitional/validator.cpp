@@ -85,7 +85,7 @@ ValidVar validCall(Call cal, CodeBlock *parent, bool inAssign){
             }
         }else{
             r.isConstant = false;
-            r.isInitialized = false;
+            r.isInitialized = true;
         }
         r.isIterator = false;
         return r;
@@ -117,7 +117,7 @@ ValidVar validVal(Value *val, CodeBlock *parent){
     
     if(val->cal != nullptr){
         auto initialized = validInitializedCall(*(val->cal.get()), parent);
-        if(!initialized.isInitialized){
+        if(!initialized.isInitialized){                                      //todo 
             warning("Wanted value could be uninitialized",val->cal->line);
         }
         return initialized;
@@ -188,11 +188,11 @@ void validRead(Command *cmd){
                     el->setConstant(false);
                     el->setInitialized(true);
                 }else{
-                    // std::string varName = call->name + ":" + std::to_string(call->firstIdx);
-                    // auto ell = std::make_shared<Variable>(varName);
-                    // ell->setConstant(false);
-                    // ell->setInitialized(true);
-                    // arr->setElement(call->firstIdx, ell);
+                    std::string varName = call->name + ":" + std::to_string(call->firstIdx);
+                    auto ell = std::make_shared<Variable>(varName);
+                    ell->setConstant(false);
+                    ell->setInitialized(true);
+                    arr->setElement(call->firstIdx, ell);
                 }
             }catch(int i){
                 //warning already printed
@@ -205,8 +205,11 @@ void validRead(Command *cmd){
                     var = arr->getElement(val);
                     if(var == nullptr){
                         std::string varName = call->name + ":" + call->secondIdx;
-                        // var = std::make_shared<Variable>(varName);
-                        // arr->setElement(val, var);
+                        var = std::make_shared<Variable>(varName);
+                        arr->setElement(val, var);
+                        var->setConstant(false);
+                        var->setInitialized(true);
+                    }else{
                         var->setConstant(false);
                         var->setInitialized(true);
                     }
@@ -218,6 +221,7 @@ void validRead(Command *cmd){
             }
         }
     }else{
+        log(var->toString());
         var->setInitialized(true);
         var->setConstant(false);
     }
@@ -241,8 +245,8 @@ void validAssign(Command *cmd){
             var = arr->getElement(call->firstIdx);
             if(var == nullptr){
                 std::string varName = call->name + ":" + std::to_string(call->firstIdx);
-                // var = std::make_shared<Variable>(varName);
-                // arr->setElement(call->firstIdx, var);
+                var = std::make_shared<Variable>(varName);
+                arr->setElement(call->firstIdx, var);
             }
         }catch(int i){
             //warning already printed
@@ -254,9 +258,9 @@ void validAssign(Command *cmd){
                 auto arr = (ArrayVariable *)(tree.getVariables()[name].get());
                 var = arr->getElement(val);
                 if(var == nullptr){
-                    // std::string varName = call->name + ":" + call->secondIdx;
-                    // var = std::make_shared<Variable>(varName);
-                    // arr->setElement(val, var);
+                    std::string varName = call->name + ":" + call->secondIdx;
+                    var = std::make_shared<Variable>(varName);
+                    arr->setElement(val, var);
                 }
             }catch(int i){
                 //warning already printed
@@ -378,40 +382,40 @@ ValidCond validCond(Condition *cond){
     ValidCond result = ValidCond();
     result.isConstVal = false;
     if(optimization){
-        if(!isInLoop(cond)){
-            if(cond->getLeft().cal == nullptr){
-                bool value;
-                int64 l = cond->getLeft().val;
-                int64 r;
-                if(cond->getRight().cal == nullptr){
-                    r = cond->getRight().val;
-                    value = getCond(l, r, cond->getCond());
-                }else{
-                    if(right.isConstant){
-                        //todo if right.cal is constant;
-                    }
-                }
+        // if(!isInLoop(cond)){
+        //     if(cond->getLeft().cal == nullptr){
+        //         bool value;
+        //         int64 l = cond->getLeft().val;
+        //         int64 r;
+        //         if(cond->getRight().cal == nullptr){
+        //             r = cond->getRight().val;
+        //             value = getCond(l, r, cond->getCond());
+        //         }else{
+        //             if(right.isConstant){
+        //                 //todo if right.cal is constant;
+        //             }
+        //         }
 
-                result.isConstVal = true;
-                result.value = value;
-            }else{
-                if(left.isConstant){
-                    int64 l = 1; //todo get left.value
-                    if(cond->getRight().cal == nullptr){
-                        int64 r = cond->getRight().val;
-                        auto value = getCond(l, r, cond->getCond());
-                        result.isConstVal = true;
-                        result.value = value;
-                    }else{
-                        if(right.isConstant){
-                            //todo if right.cal is constant;
-                        }
+        //         result.isConstVal = true;
+        //         result.value = value;
+        //     }else{
+        //         if(left.isConstant){
+        //             int64 l = 1; //todo get left.value
+        //             if(cond->getRight().cal == nullptr){
+        //                 int64 r = cond->getRight().val;
+        //                 auto value = getCond(l, r, cond->getCond());
+        //                 result.isConstVal = true;
+        //                 result.value = value;
+        //             }else{
+        //                 if(right.isConstant){
+        //                     //todo if right.cal is constant;
+        //                 }
                         
-                    }
-                }
-                //todo if left.cal is constant
-            }
-        }
+        //             }
+        //         }
+        //         //todo if left.cal is constant
+        //     }
+        // }
     }
 
     return result;

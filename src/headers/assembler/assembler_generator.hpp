@@ -3,6 +3,8 @@
 
 #include "assembler.hpp"
 #include "../transitional/transitional_state.hpp"
+#include<cstdlib>
+#include<tuple>
 
 #define _PUSH_ASM(a) { finalCode.emplace_back(a); addr++;}
 
@@ -10,12 +12,21 @@
     auto assm = std::make_shared<Asm>(instr, reg);\
     _PUSH_ASM(assm)\
 }
+
+#define _PUSH_PSEUDO_INS(instr, reg){\
+    if(std::string(reg) != "null") {\
+        auto address = registers[reg];\
+        _PUSH_INS(instr, address->index)\
+    }else{\
+        _PUSH_INS(instr, 0)\
+    }\
+}
 extern uint64 addr;
 extern uint64 regIdx;
 
 void generateNumber(std::string num);
 void generateConstants();
-
+extern void smartGeneratingConstants();
 void generateAsm(PseudoAsm *p);
 
 void generateStore(PseudoAsm *p);

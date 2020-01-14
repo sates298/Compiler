@@ -4,6 +4,7 @@
 bool optimization = false;
 bool verbose = true;
 bool debug = false;
+bool stat = false;
 
 int main(int argc, const char* argv[]){
 
@@ -22,13 +23,16 @@ int main(int argc, const char* argv[]){
             out = curr;
         }else if(curr.find("-") == 0){
             if(curr.find("o") != std::string::npos){
-                optimization = true;
+                // optimization = true;
             }
             if(curr.find("s") != std::string::npos){
                 verbose = false;
             }
             if(curr.find("d") != std::string::npos){
                 debug = true;
+            }
+            if(curr.find("stat") != std::string::npos){
+                stat = true;
             }
         }else{
             error("Unrecognized command line option " + curr, true);
@@ -38,7 +42,9 @@ int main(int argc, const char* argv[]){
         error("No input file",true);
     }
     if(out == ""){
-        error("No output file", true);
+        auto it = in.find(".imp");
+        out = in.substr(0, it) + ".mr";
+        freopen(out.c_str(),"w",stdout);
     }
 
     run();
@@ -51,7 +57,7 @@ int main(int argc, const char* argv[]){
     fclose(stdout);
 
     
-    if(debug){
+    if(stat){
         log("constants");
         for(const auto& c:tree.getNumbers()){
             log(std::to_string(c));

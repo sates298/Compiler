@@ -49,6 +49,11 @@ compiler: parser main
 test:
 	./compiler ../test-files/test.imp ../test-files/test.mr
 
+opt_test:
+	./compiler -o ../test-files/test.imp ../test-files/test_op.mr
+
+compare_test: test opt_test
+
 clean:
 	$(RM) *.o
 

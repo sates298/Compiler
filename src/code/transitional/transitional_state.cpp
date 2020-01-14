@@ -2,15 +2,15 @@
 
 PseudoAsm::PseudoAsm(uint64 k, Instruction i, std::string arg) : index(k), instr(i), argument(arg){
 }
-void PseudoAsm::shiftCode(uint64 k, std::vector<std::shared_ptr<PseudoAsm>> code){
-    for(auto& a: code){
-        a->shiftIndex(k);
+void PseudoAsm::shiftCode(uint64 from, int64 how, pseudoQue code){
+    for(int i=from; i<code.size(); i++){
+        code[i]->shiftIndex(how);
     }
 }
 uint64 PseudoAsm::getIndex(){
     return this->index;
 }
-void PseudoAsm::shiftIndex(uint64 s){
+void PseudoAsm::shiftIndex(int64 s){
     this->index += s;
 }
 void PseudoAsm::setJumpReference(std::shared_ptr<PseudoAsm> reference){

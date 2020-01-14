@@ -4,6 +4,7 @@
 #include "../assembler/assembler.hpp"
 #include "../AST/tree.hpp"
 #include<map>
+#include<deque>
 
 class PseudoAsm{
     private:
@@ -15,9 +16,9 @@ class PseudoAsm{
     public:
     PseudoAsm(uint64 k, Instruction i, std::string argument);
     virtual ~PseudoAsm() = default;
-    static void shiftCode(uint64 k, std::vector<std::shared_ptr<PseudoAsm>> code);
+    static void shiftCode(uint64 from, int64 how, std::deque<std::shared_ptr<PseudoAsm>> code);
     uint64 getIndex();
-    void shiftIndex(uint64 s);
+    void shiftIndex(int64 s);
     void setJumpReference(std::shared_ptr<PseudoAsm> reference);
     std::shared_ptr<PseudoAsm> getJumpReference();
     Instruction getInstr();
@@ -42,16 +43,15 @@ struct PseudoRegister{
     std::string toString();
 };
 
-typedef std::vector<std::shared_ptr<PseudoAsm>> pseudoVec;
+typedef std::deque<std::shared_ptr<PseudoAsm>> pseudoQue;
 
 extern std::map<std::string, std::shared_ptr<PseudoRegister>> registers;
-extern pseudoVec code;
-extern std::map<uint64, pseudoVec> waitingJumps;
+extern pseudoQue code;
+extern std::map<uint64, pseudoQue> waitingJumps;
 
 void generatePseudoCode();
 void generatePseudoRegisters();
 void valid();
 void optimizeCode();
-
 
 #endif
