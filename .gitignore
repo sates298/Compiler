@@ -1,4 +1,5 @@
-maszyna_wirtualna/
+maszyna_wirtualna/maszyna_wirtualna
+maszyna_wirtualna/maszyna_wirtualna-cln
 *.pdf
 .vscode
 */compiler

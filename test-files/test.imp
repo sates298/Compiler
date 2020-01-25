@@ -1,6 +1,6 @@
 DECLARE
     j
 BEGIN
-    j ASSIGN 1000 TIMES -10;
+    [j ASSIGN j PLUS 1;]
     WRITE j;
 END
