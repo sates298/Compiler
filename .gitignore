@@ -1,6 +1,9 @@
 maszyna_wirtualna/maszyna_wirtualna
 maszyna_wirtualna/maszyna_wirtualna-cln
-*.pdf
+polecenie.pdf
+arkusz.pdf
+doc/Makefile
+doc/README.tex
 .vscode
 */compiler
 runtests
