@@ -5,3 +5,5 @@ maszyna_wirtualna/maszyna_wirtualna-cln
 */compiler
 runtests
 test-files/jftt2019-tests/*.mr
+# antyplagiat
+src/code/transitional/validator.cpp
